@@ -14,17 +14,7 @@ CORS(app)
 creds = yaml.safe_load(open('credentials.yaml'))
 app.config['SECRET_KEY'] = creds['APP_SECRET']
 
-# creating the SQL Connection
-# mydb = mysql.connector.connect(
-#     host = creds['DB_HOST'],
-#     user = creds['DB_USER'],
-#     passwd = creds['DB_PASSWORD'],
-#     database = creds['DB_DATABASE'],
-# )
-
 # this is the part of user registration (signup)
-
-
 @app.route("/signup", methods=['POST'])
 def signup():
     mysql = database.Database()  # database class object
@@ -39,19 +29,10 @@ def signup():
     # print(fname, lname, email_id, password, password, q1, q2, q3)
 
     # look for the account, if it already exists
-    # my_cursor = mydb.cursor()
-    # query1 = "SELECT count(*) AS count FROM user WHERE EmailID = \'" + email_id + "\';"
-    # my_cursor.execute(query1)
-    # records1 = my_cursor.fetchall()
-
-    # look for the account, if it already exists
     result = mysql.getUser(email_id)
     if result > 0:
         mysql.closeCursor()
         return jsonify({'message': 'account already exists'}), 403
-
-    # if records1[0][0] == 1:
-    #     return jsonify({'message': 'account already exists'}), 401
 
     # generating the salt and hashing the password with salt
     bytes = password.encode('utf-8')
@@ -61,22 +42,7 @@ def signup():
     # decoding the binary format to store them in the database
     salt = salt.decode('utf-8')
     hashed_password = hashed_password.decode('utf-8')
-
     # print(salt, hashed_password)
-
-    # # counting the users in user table
-    # my_cursor = mydb.cursor()
-    # my_cursor.execute("SELECT count(*) AS count FROM user;")
-    # records2 = my_cursor.fetchall()
-    # user_no = records2[0][0] + 1
-
-    # # inserting the user record
-    # my_cursor = mydb.cursor()
-    # query2 = "INSERT INTO user VALUES("+"\'"+str(user_no)+"\',"+"\'"+str(fname)+"\',"+"\'"+str(lname)+"\',"+"\'"+str(email_id)+"\',"+"\'"+str(salt)+"\',"+"\'"+str(hashed_password)+"\',"+"\'"+str(q1)+"\',"+"\'"+str(q2)+"\',"+"\'"+str(q3)+"\');"
-    # print(query2)
-    # my_cursor.execute(query2)
-    # mydb.commit()
-    # my_cursor.close()
 
     # inserting the user record
     result = mysql.insertUser(fname, lname, email_id,
@@ -108,38 +74,12 @@ def login():
     password = payload['password']
 
     # look for the account, if it exists or not
-    # my_cursor = mydb.cursor()
-    # query1 = "SELECT EmailID, Password FROM user WHERE EmailID = \'" + email_id + "\';"
-    # my_cursor.execute(query1)
-    # records1 = my_cursor.fetchall()
-
-    # look for the account, if it exists or not
-    # print(records1)
-
-    # if len(records1) != 0:
-    #     # checking if the account exists or not
-    #     if str(records1[0][0]) == email_id:
-    #         pwd = records1[0][1].encode('utf-8')
-    #         hpwd = password.encode('utf-8')
-    #         res = bcrypt.checkpw(hpwd, pwd)
-    #         # check if the passwords match or not
-    #         if res:
-    #             return jsonify({'message': 'success'}), 200
-    #         else:
-    #             return jsonify({'message': 'wrong password'}), 401
-    #     else:
-    #         return jsonify({'message': 'account not found'}), 401
-    # else:
-    #     return jsonify({'message': 'account not found'}), 401
-
-    # look for the account, if it exists or not
     mysql = database.Database()  # database class object
     result = mysql.getUser(email_id)
     if result > 0:
         user_details = mysql.cur.fetchall()
         mysql.closeCursor()
-        # checking if the account exists or not
-        print(user_details[0])
+        # print(user_details[0])
         pwd = user_details[0]['Password'].encode('utf-8')
 
         hpwd = password.encode('utf-8')
@@ -156,6 +96,56 @@ def login():
         return jsonify({'message': 'wrong password'}), 401
     return jsonify({'message': 'account not found'}), 403
 
+# this is for the forgot password
+@app.route("/forgot", methods=['POST'])
+def forgot():
+    data = request.get_json()
+    email_id = data['emailId']
+    maiden = data['maidenName']
+    artist = data['artistName']
+
+    # look for the account, if it exists or not
+    mysql = database.Database()  # database class object
+    result = mysql.getUser(email_id)
+    if result > 0:
+        user_details = mysql.cur.fetchall()
+        mysql.closeCursor()
+        q1 = user_details[0]['Q1']
+        q2 = user_details[0]['Q2']
+        
+        # check if the user has answered the 2 security questions correctly
+        if maiden == q1 and artist == q2:
+            return jsonify({ 'message': 'success' }), 200
+    return jsonify({
+        'message': 'There was some error, Try again!!'
+    }), 401
+
+# this is for the forgot password
+@app.route("/updatepass", methods=['POST'])
+def updatepass():
+    data = request.get_json()
+    email_id = data['emailId']
+    new_pass = str(data['newpass'])
+
+    # look for the account, if it exists or not
+    mysql = database.Database()  # database class object
+    result = mysql.getUser(email_id)
+    if result > 0:
+        user_details = mysql.cur.fetchall()
+
+        bytes = new_pass.encode('utf-8')
+        salt = str(user_details[0]['Salt']).encode('utf-8')
+        hashed_password = bcrypt.hashpw(bytes, salt)
+        hashed_password = hashed_password.decode('utf-8')
+
+        # query for updating the password for this emailID 
+        mysql.updatePass(email_id, hashed_password)
+        mysql.closeCursor()
+
+        return jsonify({ 'message': 'success' }), 200
+    return jsonify({
+        'message': 'There was some error, Try again!!'
+    }), 401
 
 # this is the google login
 @app.route('/googlelogin', methods=['POST'])
