@@ -120,7 +120,7 @@ def forgot():
         'message': 'There was some error, Try again!!'
     }), 401
 
-# this is for the forgot password
+# this is for updating the password
 @app.route("/updatepass", methods=['POST'])
 def updatepass():
     data = request.get_json()
@@ -143,6 +143,24 @@ def updatepass():
         mysql.closeCursor()
 
         return jsonify({ 'message': 'success' }), 200
+    return jsonify({
+        'message': 'There was some error, Try again!!'
+    }), 401
+
+# this is for fetching user details
+@app.route("/getuprofile", methods=['GET'])
+def uprofile():
+    data = request.get_json()
+    email_id = data['emailId']
+
+    # look for the account, if it exists or not
+    mysql = database.Database()  # database class object
+    result = mysql.getuProfile(email_id)
+    if result > 0:
+        user_details = mysql.cur.fetchall()
+        mysql.closeCursor()
+
+        return jsonify(user_details), 200
     return jsonify({
         'message': 'There was some error, Try again!!'
     }), 401
