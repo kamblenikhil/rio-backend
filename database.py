@@ -41,6 +41,15 @@ class Database:
             "SELECT UserID FROM User WHERE FName = %s AND LName = %s and EmailID = %s", (fname, lname, email_id))
         return result
     
+    # adding the product details in the database
+    def insertProduct(self, pname, pdesc, pprice, pcategory, pimgurl, sname, scontact, sstreet, scity, sstate, scountry, szip):
+        self.cur.execute("INSERT INTO Product (Name, Description, Price, Category, ImageURL, SIName, SIContact, SIStreet, SICity, SIState, SICountry, SIZip) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
+                         (pname, pdesc, pprice, pcategory, pimgurl, sname, scontact, sstreet, scity, sstate, scountry, szip))
+        self.con.commit()
+        result = self.cur.execute(
+            "SELECT ProductID FROM Product WHERE Name = %s AND Category = %s AND ImageURL = %s AND SIName = %s AND SIZip = %s", (pname, pcategory, pimgurl, sname, szip))
+        return result
+
     # updating the password
     def updatePass(self, email, pwd):
         result = self.cur.execute("UPDATE User SET Password = %s WHERE EmailID = %s", (pwd, email))

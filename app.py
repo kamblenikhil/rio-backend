@@ -63,7 +63,6 @@ def signup():
             'message': 'There was some error, Try again!!'
         }), 401
 
-
 # this will be normal user login
 @app.route("/login", methods=['POST'])
 def login():
@@ -164,6 +163,35 @@ def uprofile():
     return jsonify({
         'message': 'There was some error, Try again!!'
     }), 401
+
+# this is for inserting product details
+@app.route("/insertproduct", methods=['POST'])
+def insertproduct():
+    mysql = database.Database()  # database class object
+    pdata = request.get_json()
+    pname = pdata['name']
+    pdesc = pdata['description']
+    pprice = pdata['price']
+    pcategory = pdata['category']
+    pimgurl = pdata['imgurl']
+    sname = pdata['sname']
+    scontact = pdata['scontact']
+    sstreet = pdata['sstreet']
+    scity = pdata['scity']
+    sstate = pdata['sstate']
+    scountry = pdata['scountry']
+    szip = pdata['szip']
+    print(pname, pdesc, pprice, pcategory, pimgurl, sname, scontact, sstreet, scity, sstate, scountry, szip)
+
+    # look for the account, if it already exists
+    result = mysql.insertProduct(pname, pdesc, pprice, pcategory, pimgurl, sname, scontact, sstreet, scity, sstate, scountry, szip)
+    if result > 0:
+        mysql.closeCursor()
+        return jsonify({'message': 'product successfully added'}), 200
+    else:
+        return jsonify({
+            'message': 'There was some error, Try again!!'
+        }), 401
 
 # this is the google login
 @app.route('/googlelogin', methods=['POST'])
