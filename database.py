@@ -49,6 +49,29 @@ class Database:
         result = self.cur.execute(
             "SELECT ProductID FROM Product WHERE Name = %s AND Category = %s AND ImageURL = %s AND SIName = %s AND SIZip = %s", (pname, pcategory, pimgurl, sname, szip))
         return result
+    
+    # fetching product details [universal - limited to admin view, pending for approval]
+    def getallProducts(self):
+        result = self.cur.execute("SELECT * FROM Product")
+        return result
+    
+    # fetching product details [user view - approved products]
+    def getApprovedProduct(self):
+        result = self.cur.execute("SELECT * FROM Product WHERE Status = %s ", (2))
+        return result
+    
+    # fetching product details [admin view - rejected products]
+    def getRejectedProduct(self):
+        result = self.cur.execute("SELECT * FROM Product WHERE Status = %s ", (3))
+        return result
+    
+    #   STATUS  =>  Pending = 1   |   Approved = 2    |   Rejected = 3
+    
+    # updating the product details
+    def updateProducts(self, pid, pstatus):
+        result = self.cur.execute("UPDATE Product SET Status = %s WHERE ProductID = %s", (pstatus, pid))
+        self.con.commit()
+        return result
 
     # updating the password
     def updatePass(self, email, pwd):

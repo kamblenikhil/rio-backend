@@ -17,7 +17,7 @@ app.config['SECRET_KEY'] = creds['APP_SECRET']
 # this is the part of user registration (signup)
 @app.route("/signup", methods=['POST'])
 def signup():
-    mysql = database.Database()  # database class object
+    mysql = database.Database()
     payload = request.get_json()
     fname = payload['firstName']
     lname = payload['lastName']
@@ -73,7 +73,7 @@ def login():
     password = payload['password']
 
     # look for the account, if it exists or not
-    mysql = database.Database()  # database class object
+    mysql = database.Database()
     result = mysql.getUser(email_id)
     if result > 0:
         user_details = mysql.cur.fetchall()
@@ -104,7 +104,7 @@ def forgot():
     artist = data['artistName']
 
     # look for the account, if it exists or not
-    mysql = database.Database()  # database class object
+    mysql = database.Database()
     result = mysql.getUser(email_id)
     if result > 0:
         user_details = mysql.cur.fetchall()
@@ -127,7 +127,7 @@ def updatepass():
     new_pass = str(data['newpass'])
 
     # look for the account, if it exists or not
-    mysql = database.Database()  # database class object
+    mysql = database.Database()
     result = mysql.getUser(email_id)
     if result > 0:
         user_details = mysql.cur.fetchall()
@@ -153,7 +153,7 @@ def uprofile():
     email_id = data['emailId']
 
     # look for the account, if it exists or not
-    mysql = database.Database()  # database class object
+    mysql = database.Database()
     result = mysql.getuProfile(email_id)
     if result > 0:
         user_details = mysql.cur.fetchall()
@@ -167,7 +167,7 @@ def uprofile():
 # this is for inserting product details
 @app.route("/insertproduct", methods=['POST'])
 def insertproduct():
-    mysql = database.Database()  # database class object
+    mysql = database.Database()
     pdata = request.get_json()
     pname = pdata['name']
     pdesc = pdata['description']
@@ -181,19 +181,73 @@ def insertproduct():
     sstate = pdata['sstate']
     scountry = pdata['scountry']
     szip = pdata['szip']
-    print(pname, pdesc, pprice, pcategory, pimgurl, sname, scontact, sstreet, scity, sstate, scountry, szip)
+    # print(pname, pdesc, pprice, pcategory, pimgurl, sname, scontact, sstreet, scity, sstate, scountry, szip)
 
     # look for the account, if it already exists
-    result = mysql.insertProduct(pname, pdesc, pprice, pcategory, pimgurl, sname, scontact, sstreet, scity, sstate, scountry, szip)
+    pid = mysql.insertProduct(pname, pdesc, pprice, pcategory, pimgurl, sname, scontact, sstreet, scity, sstate, scountry, szip)
+    if pid > 0:
+        mysql.closeCursor()
+        return jsonify(pid), 200
+    else:
+        return jsonify({
+            'message': 'There was some error, Try again!!'
+        }), 401
+    
+# this is for fetching the product details for admin panel
+@app.route("/getallproducts", methods=['GET'])
+def getallproducts():
+    mysql = database.Database()
+    result = mysql.getallProducts()
+    if result > 0:
+        product_details = mysql.cur.fetchall()
+        mysql.closeCursor()
+        return jsonify(product_details), 200
+    else:
+        return jsonify({
+            'message': 'There was some error, Try again!!'
+        }), 401
+    
+# this is for fetching all the approved product details for user view
+@app.route("/getapprovedproducts", methods=['GET'])
+def getapprovedproducts():
+    mysql = database.Database()
+    result = mysql.getApprovedProduct()
+    if result > 0:
+        product_details = mysql.cur.fetchall()
+        mysql.closeCursor()
+        return jsonify(product_details), 200
+    else:
+        return jsonify({ 'message': 'There are no approved products' }), 401
+    
+# this is for fetching all the rejected product details
+@app.route("/getrejectedproducts", methods=['GET'])
+def getrejectedproducts():
+    mysql = database.Database()
+    result = mysql.getRejectedProduct()
+    if result > 0:
+        product_details = mysql.cur.fetchall()
+        mysql.closeCursor()
+        return jsonify(product_details), 200
+    else:
+        return jsonify({ 'message': 'There are no rejected products' }), 401
+
+# this is for updating the product status (admin approval)
+@app.route("/productstatus", methods=["PATCH"])
+def productstatus():
+    mysql = database.Database()
+    pdata = request.get_json()
+    pid = pdata['productid']
+    pstatus = pdata['productstatus']
+    result = mysql.updateProducts(pid, pstatus)
     if result > 0:
         mysql.closeCursor()
-        return jsonify({'message': 'product successfully added'}), 200
+        return jsonify({ 'message': 'success' }), 200
     else:
         return jsonify({
             'message': 'There was some error, Try again!!'
         }), 401
 
-# this is the google login
+# this is for google login
 @app.route('/googlelogin', methods=['POST'])
 def googlelogin():
     login_data = request.json
