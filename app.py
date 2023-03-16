@@ -59,9 +59,7 @@ def signup():
         return maketoken.encode_token(app, response, user_id)
     else:
         mysql.closeCursor()
-        return jsonify({
-            'message': 'There was some error, Try again!!'
-        }), 401
+        return jsonify({ 'message': 'There was some error, Try again!!' }), 401
 
 # this will be normal user login
 @app.route("/login", methods=['POST'])
@@ -103,21 +101,24 @@ def forgot():
     maiden = data['maidenName']
     artist = data['artistName']
 
-    # look for the account, if it exists or not
     mysql = database.Database()
-    result = mysql.getUser(email_id)
-    if result > 0:
-        user_details = mysql.cur.fetchall()
-        mysql.closeCursor()
-        q1 = user_details[0]['Q1']
-        q2 = user_details[0]['Q2']
-        
-        # check if the user has answered the 2 security questions correctly
-        if maiden == q1 and artist == q2:
-            return jsonify({ 'message': 'success' }), 200
-    return jsonify({
-        'message': 'There was some error, Try again!!'
-    }), 401
+    user_id = request.args.get('id')
+    token = request.headers['Authorization'].split(" ")[1]
+    # user token validation
+    if maketoken.decode_token(app, user_id, token):
+        result = mysql.getUser(email_id)
+        # look for the account, if it exists or not
+        if result > 0:
+            user_details = mysql.cur.fetchall()
+            mysql.closeCursor()
+            q1 = user_details[0]['Q1']
+            q2 = user_details[0]['Q2']
+            
+            # check if the user has answered the 2 security questions correctly
+            if maiden == q1 and artist == q2:
+                return jsonify({ 'message': 'success' }), 200
+        return jsonify({ 'message': 'There was some error, Try again!!' }), 401
+    return jsonify({ 'message': 'Invalid Token' }), 401
 
 # this is for updating the password
 @app.route("/updatepass", methods=['POST'])
@@ -128,23 +129,26 @@ def updatepass():
 
     # look for the account, if it exists or not
     mysql = database.Database()
-    result = mysql.getUser(email_id)
-    if result > 0:
-        user_details = mysql.cur.fetchall()
+    user_id = request.args.get('id')
+    token = request.headers['Authorization'].split(" ")[1]
+    # user token validation
+    if maketoken.decode_token(app, user_id, token):
+        result = mysql.getUser(email_id)
+        if result > 0:
+            user_details = mysql.cur.fetchall()
 
-        bytes = new_pass.encode('utf-8')
-        salt = str(user_details[0]['Salt']).encode('utf-8')
-        hashed_password = bcrypt.hashpw(bytes, salt)
-        hashed_password = hashed_password.decode('utf-8')
+            bytes = new_pass.encode('utf-8')
+            salt = str(user_details[0]['Salt']).encode('utf-8')
+            hashed_password = bcrypt.hashpw(bytes, salt)
+            hashed_password = hashed_password.decode('utf-8')
 
-        # query for updating the password for this emailID 
-        mysql.updatePass(email_id, hashed_password)
-        mysql.closeCursor()
+            # query for updating the password for this emailID 
+            mysql.updatePass(email_id, hashed_password)
+            mysql.closeCursor()
 
-        return jsonify({ 'message': 'success' }), 200
-    return jsonify({
-        'message': 'There was some error, Try again!!'
-    }), 401
+            return jsonify({ 'message': 'success' }), 200
+        return jsonify({ 'message': 'There was some error, Try again!!' }), 401
+    return jsonify({ 'message': 'Invalid Token' }), 401
 
 # this is for fetching user details
 @app.route("/getuprofile", methods=['GET'])
@@ -160,9 +164,7 @@ def uprofile():
         mysql.closeCursor()
 
         return jsonify(user_details), 200
-    return jsonify({
-        'message': 'There was some error, Try again!!'
-    }), 401
+    return jsonify({ 'message': 'There was some error, Try again!!' }), 401
 
 # this is for inserting product details
 @app.route("/insertproduct", methods=['POST'])
@@ -183,16 +185,19 @@ def insertproduct():
     szip = pdata['szip']
     # print(pname, pdesc, pprice, pcategory, pimgurl, sname, scontact, sstreet, scity, sstate, scountry, szip)
 
-    # look for the account, if it already exists
-    pid = mysql.insertProduct(pname, pdesc, pprice, pcategory, pimgurl, sname, scontact, sstreet, scity, sstate, scountry, szip)
-    if pid > 0:
-        mysql.closeCursor()
-        return jsonify(pid), 200
-    else:
-        return jsonify({
-            'message': 'There was some error, Try again!!'
-        }), 401
-    
+    user_id = request.args.get('id')
+    token = request.headers['Authorization'].split(" ")[1]
+    # user token validation
+    if maketoken.decode_token(app, user_id, token):
+        # look for the account, if it already exists
+        pid = mysql.insertProduct(pname, pdesc, pprice, pcategory, pimgurl, sname, scontact, sstreet, scity, sstate, scountry, szip)
+        if pid > 0:
+            mysql.closeCursor()
+            return jsonify('message': 'product added successfully'), 200
+        else:
+            return jsonify({ 'message': 'There was some error, Try again!!' }), 401
+    return jsonify({ 'message': 'Invalid Token' }), 401
+
 # this is for fetching the product details for admin panel
 @app.route("/getallproducts", methods=['GET'])
 def getallproducts():
@@ -203,9 +208,7 @@ def getallproducts():
         mysql.closeCursor()
         return jsonify(product_details), 200
     else:
-        return jsonify({
-            'message': 'There was some error, Try again!!'
-        }), 401
+        return jsonify({ 'message': 'There was some error, Try again!!' }), 401
     
 # this is for fetching all the approved product details for user view
 @app.route("/getapprovedproducts", methods=['GET'])
@@ -243,9 +246,7 @@ def productstatus():
         mysql.closeCursor()
         return jsonify({ 'message': 'success' }), 200
     else:
-        return jsonify({
-            'message': 'There was some error, Try again!!'
-        }), 401
+        return jsonify({ 'message': 'There was some error, Try again!!' }), 401
 
 # this is for google login
 @app.route('/googlelogin', methods=['POST'])
