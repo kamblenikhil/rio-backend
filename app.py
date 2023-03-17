@@ -190,10 +190,10 @@ def insertproduct():
     # user token validation
     if maketoken.decode_token(app, user_id, token):
         # look for the account, if it already exists
-        pid = mysql.insertProduct(pname, pdesc, pprice, pcategory, pimgurl, sname, scontact, sstreet, scity, sstate, scountry, szip)
+        pid = mysql.insertProduct(user_id, pname, pdesc, pprice, pcategory, pimgurl, sname, scontact, sstreet, scity, sstate, scountry, szip)
         if pid > 0:
             mysql.closeCursor()
-            return jsonify('message': 'product added successfully'), 200
+            return jsonify({ 'message': 'product added successfully' }), 200
         else:
             return jsonify({ 'message': 'There was some error, Try again!!' }), 401
     return jsonify({ 'message': 'Invalid Token' }), 401

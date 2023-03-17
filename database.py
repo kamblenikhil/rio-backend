@@ -42,13 +42,17 @@ class Database:
         return result
     
     # adding the product details in the database
-    def insertProduct(self, pname, pdesc, pprice, pcategory, pimgurl, sname, scontact, sstreet, scity, sstate, scountry, szip):
+    def insertProduct(self, user_id, pname, pdesc, pprice, pcategory, pimgurl, sname, scontact, sstreet, scity, sstate, scountry, szip):
         self.cur.execute("INSERT INTO Product (Name, Description, Price, Category, ImageURL, SIName, SIContact, SIStreet, SICity, SIState, SICountry, SIZip) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
                          (pname, pdesc, pprice, pcategory, pimgurl, sname, scontact, sstreet, scity, sstate, scountry, szip))
         self.con.commit()
-        result = self.cur.execute(
+        res = self.cur.execute(
             "SELECT ProductID FROM Product WHERE Name = %s AND Category = %s AND ImageURL = %s AND SIName = %s AND SIZip = %s", (pname, pcategory, pimgurl, sname, szip))
-        return result
+        res_det = self.cur.fetchall()
+        prod_id = res_det[0]['ProductID']
+        self.cur.execute("INSERT INTO user_product (UserID, ProductID) VALUES(%s, %s)", (user_id, prod_id))
+        self.con.commit()
+        return prod_id
     
     # fetching product details [universal - limited to admin view, pending for approval]
     def getallProducts(self):
