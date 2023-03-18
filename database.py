@@ -50,13 +50,19 @@ class Database:
             "SELECT ProductID FROM Product WHERE Name = %s AND Category = %s AND ImageURL = %s AND SIName = %s AND SIZip = %s", (pname, pcategory, pimgurl, sname, szip))
         res_det = self.cur.fetchall()
         prod_id = res_det[0]['ProductID']
-        self.cur.execute("INSERT INTO user_product (UserID, ProductID) VALUES(%s, %s)", (user_id, prod_id))
+        method = "1"    # Method 1 = Product Posted by the User
+        self.cur.execute("INSERT INTO user_product (UserID, ProductID, Method) VALUES(%s, %s, %s)", (user_id, prod_id, method))
         self.con.commit()
         return prod_id
     
     # fetching product details [universal - limited to admin view, pending for approval]
     def getallProducts(self):
         result = self.cur.execute("SELECT * FROM Product")
+        return result
+    
+    # fetching products posted or purchased by the user [Posted = 1     |     Purchased = 2]
+    def getUserProducts(self, user_id, method):
+        result = self.cur.execute("SELECT product.* FROM product, user_product WHERE user_product.UserID = %s AND product.ProductID = user_product.ProductID AND user_product.method = %s", (user_id, method))
         return result
     
     # fetching product details [user view - approved products]

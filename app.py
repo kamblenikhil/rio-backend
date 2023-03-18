@@ -233,6 +233,58 @@ def getrejectedproducts():
         return jsonify(product_details), 200
     else:
         return jsonify({ 'message': 'There are no rejected products' }), 401
+    
+# this is for fetching all products posted by the user [method = 1]
+@app.route("/upposted", methods=['GET'])
+def upposted():
+    data = request.get_json()
+    email_id = data['emailId']
+
+    mysql = database.Database()
+    user_id = request.args.get('id')
+    token = request.headers['Authorization'].split(" ")[1]
+    # user token validation
+    if maketoken.decode_token(app, user_id, token):
+        result = mysql.getUser(email_id)
+        # look for the account, if it exists or not
+        if result > 0:
+            res = mysql.getUserProducts(user_id, "1")
+            if res > 0:
+                user_details = mysql.cur.fetchall()
+                mysql.closeCursor()
+                return jsonify(user_details), 200
+            return jsonify({'message': 'There are no posted products by user'}), 200
+        return jsonify({ 'message': 'There was some error, Try again!!' }), 401
+    return jsonify({ 'message': 'Invalid Token' }), 401
+
+# this is for fetching all products purchased by the user [method = 2]
+@app.route("/uppurchased", methods=['GET'])
+def uppurchased():
+    data = request.get_json()
+    email_id = data['emailId']
+
+    mysql = database.Database()
+    user_id = request.args.get('id')
+    token = request.headers['Authorization'].split(" ")[1]
+    # user token validation
+    if maketoken.decode_token(app, user_id, token):
+        result = mysql.getUser(email_id)
+        # look for the account, if it exists or not
+        if result > 0:
+            res = mysql.getUserProducts(user_id, "2")
+            if res > 0:
+                user_details = mysql.cur.fetchall()
+                mysql.closeCursor()
+                return jsonify(user_details), 200
+            return jsonify({'message': 'There are no purchased products by user'}), 200
+        return jsonify({ 'message': 'There was some error, Try again!!' }), 401
+    return jsonify({ 'message': 'Invalid Token' }), 401
+
+@app.route("/dummy", methods=["GET"])
+def dummy():
+    temp = {"temp":"temp"}
+    return maketoken.encode_token(app, temp, "2")
+    
 
 # this is for updating the product status (admin approval)
 @app.route("/productstatus", methods=["PATCH"])
