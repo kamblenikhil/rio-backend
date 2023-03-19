@@ -60,7 +60,18 @@ class Database:
         result = self.cur.execute("SELECT * FROM Product")
         return result
     
-    # fetching products posted or purchased by the user [Posted = 1     |     Purchased = 2]
+    # fetching product reviews
+    def getProductReviews(self, product_id):
+        result = self.cur.execute("SELECT * FROM review WHERE ProductID = %s", (product_id))
+        return result
+    
+    # inserting product reviews
+    def insertProductReviews(self, user_id, rating, comment, product_id):
+        result = self.cur.execute("INSERT INTO review (UserID, Rating, Comment, ProductID) VALUES (%s, %s, %s, %s)", (user_id, rating, comment, product_id))
+        self.con.commit()
+        return result
+    
+    # fetching products posted or purchased by the user [Posted = 1  |  Purchased = 2]
     def getUserProducts(self, user_id, method):
         result = self.cur.execute("SELECT product.* FROM product, user_product WHERE user_product.UserID = %s AND product.ProductID = user_product.ProductID AND user_product.method = %s", (user_id, method))
         return result
@@ -91,14 +102,12 @@ class Database:
 
     # fetching google user details from the database
     def getGoogleUser(self, email_id, google_id):
-        result = self.cur.execute(
-            "SELECT * FROM User where EmailID = %s AND GoogleID = %s", (email_id, google_id))
+        result = self.cur.execute( "SELECT * FROM User where EmailID = %s AND GoogleID = %s", (email_id, google_id))
         return result
 
     # adding google user in the database
     def updateUserAsGoogleUser(self, email_id, google_id):
-        result = self.cur.execute(
-            "UPDATE User SET GoogleID = %s WHERE EmailID = %s", (google_id, email_id))
+        result = self.cur.execute( "UPDATE User SET GoogleID = %s WHERE EmailID = %s", (google_id, email_id))
         self.con.commit()
         return result
 

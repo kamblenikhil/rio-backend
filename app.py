@@ -248,7 +248,7 @@ def upposted():
         result = mysql.getUser(email_id)
         # look for the account, if it exists or not
         if result > 0:
-            res = mysql.getUserProducts(user_id, "1")
+            res = mysql.getUserProducts(int(user_id), 1)
             if res > 0:
                 user_details = mysql.cur.fetchall()
                 mysql.closeCursor()
@@ -271,7 +271,7 @@ def uppurchased():
         result = mysql.getUser(email_id)
         # look for the account, if it exists or not
         if result > 0:
-            res = mysql.getUserProducts(user_id, "2")
+            res = mysql.getUserProducts(int(user_id), 2)
             if res > 0:
                 user_details = mysql.cur.fetchall()
                 mysql.closeCursor()
@@ -280,14 +280,42 @@ def uppurchased():
         return jsonify({ 'message': 'There was some error, Try again!!' }), 401
     return jsonify({ 'message': 'Invalid Token' }), 401
 
-@app.route("/dummy", methods=["GET"])
-def dummy():
-    temp = {"temp":"temp"}
-    return maketoken.encode_token(app, temp, "2")
+# this is for fetching product reviews
+@app.route("/getprodreviews", methods=['GET'])
+def getprodreviews():
+    mysql = database.Database()
+    pdata = request.get_json()
+    product_id = pdata['productid']
+    result = mysql.getProductReviews(product_id)
+    if result > 0:
+        pdetails = mysql.cur.fetchall()
+        mysql.closeCursor()
+        return jsonify(pdetails), 200
+    else:
+        return jsonify({ 'message': 'There are no reviews for this product' }), 200
     
+# this is for inserting product review
+@app.route("/insertprodreviews", methods=['POST'])
+def insertprodreviews():
+    mysql = database.Database()
+    pdata = request.get_json()
+    user_id = request.args.get('id')
+    rating = pdata['rating']
+    comment = pdata['comment']
+    product_id = pdata['productid']
+    result = mysql.insertProductReviews(user_id, rating, comment, product_id)
+    if result > 0:
+        mysql.closeCursor()
+        return jsonify({ 'message': 'added product rating successfully' }), 200
+    return jsonify({ 'message': 'There was some error, Try again!!' }), 401
+
+# @app.route("/dummy", methods=["GET"])
+# def dummy():
+#     temp = {"temp":"temp"}
+#     return maketoken.encode_token(app, temp, "2")
 
 # this is for updating the product status (admin approval)
-@app.route("/productstatus", methods=["PATCH"])
+@app.route("/productstatus", methods=['PATCH'])
 def productstatus():
     mysql = database.Database()
     pdata = request.get_json()
