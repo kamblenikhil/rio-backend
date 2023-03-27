@@ -65,6 +65,11 @@ class Database:
         result = self.cur.execute("SELECT * FROM review WHERE ProductID = %s", (product_id))
         return result
     
+    # fetching product ratings
+    def getProductRatings(self, product_id):
+        result = self.cur.execute("SELECT AVG(Rating) AS AverageRatings FROM review WHERE ProductID = %s", (product_id))
+        return result
+    
     # inserting product reviews
     def insertProductReviews(self, user_id, rating, comment, product_id):
         result = self.cur.execute("INSERT INTO review (UserID, Rating, Comment, ProductID) VALUES (%s, %s, %s, %s)", (user_id, rating, comment, product_id))
@@ -74,6 +79,11 @@ class Database:
     # fetching products posted or purchased by the user [Posted = 1  |  Purchased = 2]
     def getUserProducts(self, user_id, method):
         result = self.cur.execute("SELECT product.* FROM product, user_product WHERE user_product.UserID = %s AND product.ProductID = user_product.ProductID AND user_product.method = %s", (user_id, method))
+        return result
+    
+    # fetching single product details
+    def getProduct(self, pid):
+        result = self.cur.execute("SELECT * FROM Product WHERE ProductID = %s ", (pid))
         return result
     
     # fetching product details [user view - approved products]

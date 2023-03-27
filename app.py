@@ -234,6 +234,20 @@ def getrejectedproducts():
     else:
         return jsonify({ 'message': 'There are no rejected products' }), 401
     
+# this is for fetching a single product details for user view
+@app.route("/getproduct", methods=['GET'])
+def getproduct():
+    data = request.get_json()
+    pid = data['ProductId']
+    mysql = database.Database()
+    result = mysql.getProduct(pid)
+    if result > 0:
+        product_details = mysql.cur.fetchall()
+        mysql.closeCursor()
+        return jsonify(product_details), 200
+    else:
+        return jsonify({ 'message': 'This product does not exist' }), 401
+    
 # this is for fetching all products posted by the user [method = 1]
 @app.route("/upposted", methods=['GET'])
 def upposted():
@@ -294,6 +308,20 @@ def getprodreviews():
     else:
         return jsonify({ 'message': 'There are no reviews for this product' }), 200
     
+# this is for fetching product average ratings
+@app.route("/getprodratings", methods=['GET'])
+def getprodratings():
+    mysql = database.Database()
+    pdata = request.get_json()
+    product_id = pdata['productid']
+    result = mysql.getProductRatings(product_id)
+    if result > 0:
+        pdetails = mysql.cur.fetchall()
+        mysql.closeCursor()
+        return jsonify(pdetails), 200
+    else:
+        return jsonify({ 'message': 'There are no reviews for this product' }), 200
+    
 # this is for inserting product review
 @app.route("/insertprodreviews", methods=['POST'])
 def insertprodreviews():
@@ -309,10 +337,10 @@ def insertprodreviews():
         return jsonify({ 'message': 'added product rating successfully' }), 200
     return jsonify({ 'message': 'There was some error, Try again!!' }), 401
 
-# @app.route("/dummy", methods=["GET"])
-# def dummy():
-#     temp = {"temp":"temp"}
-#     return maketoken.encode_token(app, temp, "2")
+@app.route("/dummy", methods=["GET"])
+def dummy():
+    temp = {"temp":"temp"}
+    return maketoken.encode_token(app, temp, "2")
 
 # this is for updating the product status (admin approval)
 @app.route("/productstatus", methods=['PATCH'])
