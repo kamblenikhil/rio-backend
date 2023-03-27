@@ -27,9 +27,9 @@ class Database:
         return result
     
     # fetching the user profile details from the database
-    def getuProfile(self, email_id):
+    def getuProfile(self, user_id):
         result = self.cur.execute(
-            "SELECT Fname, LName, EmailID, ProfilePic FROM User where EmailID = %s", (email_id))
+            "SELECT Fname, LName, EmailID, ProfilePic FROM User where UserID = %s", (user_id))
         return result
 
     # adding the user details in the database

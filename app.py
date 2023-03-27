@@ -151,14 +151,13 @@ def updatepass():
     return jsonify({ 'message': 'Invalid Token' }), 401
 
 # this is for fetching user details
-@app.route("/getuprofile", methods=['POST'])
+@app.route("/getuprofile", methods=['GET'])
 def uprofile():
-    data = request.get_json()
-    email_id = data['emailId']
+    user_id = request.args.get('id')
 
     # look for the account, if it exists or not
     mysql = database.Database()
-    result = mysql.getuProfile(email_id)
+    result = mysql.getuProfile(user_id)
     if result > 0:
         user_details = mysql.cur.fetchall()
         mysql.closeCursor()
@@ -235,12 +234,11 @@ def getrejectedproducts():
         return jsonify({ 'message': 'There are no rejected products' }), 401
     
 # this is for fetching a single product details for user view
-@app.route("/getproduct", methods=['POST'])
+@app.route("/getproduct", methods=['GET'])
 def getproduct():
-    data = request.get_json()
-    pid = data['ProductId']
+    product_id = request.args.get('productid')
     mysql = database.Database()
-    result = mysql.getProduct(pid)
+    result = mysql.getProduct(product_id)
     if result > 0:
         product_details = mysql.cur.fetchall()
         mysql.closeCursor()
@@ -295,11 +293,10 @@ def uppurchased():
     return jsonify({ 'message': 'Invalid Token' }), 401
 
 # this is for fetching product reviews
-@app.route("/getprodreviews", methods=['POST'])
+@app.route("/getprodreviews", methods=['GET'])
 def getprodreviews():
     mysql = database.Database()
-    pdata = request.get_json()
-    product_id = pdata['productid']
+    product_id = request.args.get('productid')
     result = mysql.getProductReviews(product_id)
     if result > 0:
         pdetails = mysql.cur.fetchall()
@@ -309,11 +306,10 @@ def getprodreviews():
         return jsonify({ 'message': 'There are no reviews for this product' }), 200
     
 # this is for fetching product average ratings
-@app.route("/getprodratings", methods=['POST'])
+@app.route("/getprodratings", methods=['GET'])
 def getprodratings():
     mysql = database.Database()
-    pdata = request.get_json()
-    product_id = pdata['productid']
+    product_id = request.args.get('productid')
     result = mysql.getProductRatings(product_id)
     if result > 0:
         pdetails = mysql.cur.fetchall()
