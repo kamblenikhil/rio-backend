@@ -151,7 +151,7 @@ def updatepass():
     return jsonify({ 'message': 'Invalid Token' }), 401
 
 # this is for fetching user details
-@app.route("/getuprofile", methods=['GET'])
+@app.route("/getuprofile", methods=['POST'])
 def uprofile():
     data = request.get_json()
     email_id = data['emailId']
@@ -235,7 +235,7 @@ def getrejectedproducts():
         return jsonify({ 'message': 'There are no rejected products' }), 401
     
 # this is for fetching a single product details for user view
-@app.route("/getproduct", methods=['GET'])
+@app.route("/getproduct", methods=['POST'])
 def getproduct():
     data = request.get_json()
     pid = data['ProductId']
@@ -249,7 +249,7 @@ def getproduct():
         return jsonify({ 'message': 'This product does not exist' }), 401
     
 # this is for fetching all products posted by the user [method = 1]
-@app.route("/upposted", methods=['GET'])
+@app.route("/upposted", methods=['POST'])
 def upposted():
     data = request.get_json()
     email_id = data['emailId']
@@ -272,7 +272,7 @@ def upposted():
     return jsonify({ 'message': 'Invalid Token' }), 401
 
 # this is for fetching all products purchased by the user [method = 2]
-@app.route("/uppurchased", methods=['GET'])
+@app.route("/uppurchased", methods=['POST'])
 def uppurchased():
     data = request.get_json()
     email_id = data['emailId']
@@ -295,7 +295,7 @@ def uppurchased():
     return jsonify({ 'message': 'Invalid Token' }), 401
 
 # this is for fetching product reviews
-@app.route("/getprodreviews", methods=['GET'])
+@app.route("/getprodreviews", methods=['POST'])
 def getprodreviews():
     mysql = database.Database()
     pdata = request.get_json()
@@ -309,7 +309,7 @@ def getprodreviews():
         return jsonify({ 'message': 'There are no reviews for this product' }), 200
     
 # this is for fetching product average ratings
-@app.route("/getprodratings", methods=['GET'])
+@app.route("/getprodratings", methods=['POST'])
 def getprodratings():
     mysql = database.Database()
     pdata = request.get_json()
@@ -337,7 +337,7 @@ def insertprodreviews():
         return jsonify({ 'message': 'added product rating successfully' }), 200
     return jsonify({ 'message': 'There was some error, Try again!!' }), 401
 
-@app.route("/dummy", methods=["GET"])
+@app.route("/dummy", methods=["POST"])
 def dummy():
     temp = {"temp":"temp"}
     return maketoken.encode_token(app, temp, "2")
