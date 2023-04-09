@@ -15,6 +15,8 @@ creds = yaml.safe_load(open('credentials.yaml'))
 app.config['SECRET_KEY'] = creds['APP_SECRET']
 
 # this is the part of user registration (signup)
+
+
 @app.route("/signup", methods=['POST'])
 def signup():
     mysql = database.Database()
@@ -59,9 +61,11 @@ def signup():
         return maketoken.encode_token(app, response, user_id)
     else:
         mysql.closeCursor()
-        return jsonify({ 'message': 'There was some error, Try again!!' }), 401
+        return jsonify({'message': 'There was some error, Try again!!'}), 401
 
 # this will be normal user login
+
+
 @app.route("/login", methods=['POST'])
 def login():
     payload = request.get_json()
@@ -94,6 +98,8 @@ def login():
     return jsonify({'message': 'account not found'}), 403
 
 # this is for the forgot password
+
+
 @app.route("/forgot", methods=['POST'])
 def forgot():
     data = request.get_json()
@@ -113,14 +119,16 @@ def forgot():
             mysql.closeCursor()
             q1 = user_details[0]['Q1']
             q2 = user_details[0]['Q2']
-            
+
             # check if the user has answered the 2 security questions correctly
             if maiden == q1 and artist == q2:
-                return jsonify({ 'message': 'success' }), 200
-        return jsonify({ 'message': 'There was some error, Try again!!' }), 401
-    return jsonify({ 'message': 'Invalid Token' }), 401
+                return jsonify({'message': 'success'}), 200
+        return jsonify({'message': 'There was some error, Try again!!'}), 401
+    return jsonify({'message': 'Invalid Token'}), 401
 
 # this is for updating the password
+
+
 @app.route("/updatepass", methods=['POST'])
 def updatepass():
     data = request.get_json()
@@ -142,15 +150,17 @@ def updatepass():
             hashed_password = bcrypt.hashpw(bytes, salt)
             hashed_password = hashed_password.decode('utf-8')
 
-            # query for updating the password for this emailID 
+            # query for updating the password for this emailID
             mysql.updatePass(email_id, hashed_password)
             mysql.closeCursor()
 
-            return jsonify({ 'message': 'success' }), 200
-        return jsonify({ 'message': 'There was some error, Try again!!' }), 401
-    return jsonify({ 'message': 'Invalid Token' }), 401
+            return jsonify({'message': 'success'}), 200
+        return jsonify({'message': 'There was some error, Try again!!'}), 401
+    return jsonify({'message': 'Invalid Token'}), 401
 
 # this is for fetching user details
+
+
 @app.route("/getuprofile", methods=['GET'])
 def uprofile():
     user_id = request.args.get('id')
@@ -163,9 +173,11 @@ def uprofile():
         mysql.closeCursor()
 
         return jsonify(user_details), 200
-    return jsonify({ 'message': 'There was some error, Try again!!' }), 401
+    return jsonify({'message': 'There was some error, Try again!!'}), 401
 
 # this is for inserting product details
+
+
 @app.route("/insertproduct", methods=['POST'])
 def insertproduct():
     mysql = database.Database()
@@ -189,15 +201,18 @@ def insertproduct():
     # user token validation
     if maketoken.decode_token(app, user_id, token):
         # look for the account, if it already exists
-        pid = mysql.insertProduct(user_id, pname, pdesc, pprice, pcategory, pimgurl, sname, scontact, sstreet, scity, sstate, scountry, szip)
+        pid = mysql.insertProduct(user_id, pname, pdesc, pprice, pcategory,
+                                  pimgurl, sname, scontact, sstreet, scity, sstate, scountry, szip)
         if pid > 0:
             mysql.closeCursor()
-            return jsonify({ 'message': 'product added successfully' }), 200
+            return jsonify({'message': 'product added successfully'}), 200
         else:
-            return jsonify({ 'message': 'There was some error, Try again!!' }), 401
-    return jsonify({ 'message': 'Invalid Token' }), 401
+            return jsonify({'message': 'There was some error, Try again!!'}), 401
+    return jsonify({'message': 'Invalid Token'}), 401
 
 # this is for fetching the product details for admin panel
+
+
 @app.route("/getallproducts", methods=['GET'])
 def getallproducts():
     mysql = database.Database()
@@ -207,33 +222,80 @@ def getallproducts():
         mysql.closeCursor()
         return jsonify(product_details), 200
     else:
-        return jsonify({ 'message': 'There was some error, Try again!!' }), 401
-    
+        return jsonify({'message': 'There was some error, Try again!!'}), 401
+
 # this is for fetching all the approved product details for user view
+
+
 @app.route("/getapprovedproducts", methods=['GET'])
 def getapprovedproducts():
     mysql = database.Database()
     result = mysql.getApprovedProduct()
     if result > 0:
         product_details = mysql.cur.fetchall()
+        response = []
+        for prods in product_details:
+            res = {
+                'pid': prods['ProductID'],
+                'pname': prods['Name'],
+                'rating': prods['Rating'],
+                'img': prods['ImageURL'],
+                'price': prods['Price'],
+                'category': prods['Category'],
+                'desc': prods['Description'],
+                'SICity': prods['SICity'],
+                "SIContact": prods["SIContact"],
+                "SICountry": prods["SICountry"],
+                "SIName": prods["SIName"],
+                "SIState": prods["SIState"],
+                "SIStreet": prods["SIStreet"],
+                "SIZip": prods["SIZip"],
+
+            }
+            response.append(res)
+
         mysql.closeCursor()
-        return jsonify(product_details), 200
+        return jsonify(response), 200
     else:
-        return jsonify({ 'message': 'There are no approved products' }), 401
-    
+        return jsonify({'message': 'There are no approved products'}), 401
+
 # this is for fetching all the rejected product details
+
+
 @app.route("/getrejectedproducts", methods=['GET'])
 def getrejectedproducts():
     mysql = database.Database()
     result = mysql.getRejectedProduct()
     if result > 0:
         product_details = mysql.cur.fetchall()
+        response = []
+        for prods in product_details:
+            res = {
+                'pid': prods['ProductID'],
+                'pname': prods['Name'],
+                'rating': prods['Rating'],
+                'img': prods['ImageURL'],
+                'price': prods['Price'],
+                'category': prods['Category'],
+                'desc': prods['Description'],
+                'SICity': prods['SICity'],
+                "SIContact": prods["SIContact"],
+                "SICountry": prods["SICountry"],
+                "SIName": prods["SIName"],
+                "SIState": prods["SIState"],
+                "SIStreet": prods["SIStreet"],
+                "SIZip": prods["SIZip"],
+
+            }
+            response.append(res)
         mysql.closeCursor()
         return jsonify(product_details), 200
     else:
-        return jsonify({ 'message': 'There are no rejected products' }), 401
-    
+        return jsonify({'message': 'There are no rejected products'}), 401
+
 # this is for fetching a single product details for user view
+
+
 @app.route("/getproduct", methods=['GET'])
 def getproduct():
     product_id = request.args.get('productid')
@@ -241,12 +303,34 @@ def getproduct():
     result = mysql.getProduct(product_id)
     if result > 0:
         product_details = mysql.cur.fetchall()
+        response = []
+        for prods in product_details:
+            res = {
+                'pid': prods['ProductID'],
+                'pname': prods['Name'],
+                'rating': prods['Rating'],
+                'img': prods['ImageURL'],
+                'price': prods['Price'],
+                'category': prods['Category'],
+                'desc': prods['Description'],
+                'SICity': prods['SICity'],
+                "SIContact": prods["SIContact"],
+                "SICountry": prods["SICountry"],
+                "SIName": prods["SIName"],
+                "SIState": prods["SIState"],
+                "SIStreet": prods["SIStreet"],
+                "SIZip": prods["SIZip"],
+
+            }
+            response.append(res)
         mysql.closeCursor()
-        return jsonify(product_details), 200
+        return jsonify(res), 200
     else:
-        return jsonify({ 'message': 'This product does not exist' }), 401
-    
+        return jsonify({'message': 'This product does not exist'}), 401
+
 # this is for fetching all products posted by the user [method = 1]
+
+
 @app.route("/upposted", methods=['POST'])
 def upposted():
     data = request.get_json()
@@ -266,10 +350,12 @@ def upposted():
                 mysql.closeCursor()
                 return jsonify(user_details), 200
             return jsonify({'message': 'There are no posted products by user'}), 200
-        return jsonify({ 'message': 'There was some error, Try again!!' }), 401
-    return jsonify({ 'message': 'Invalid Token' }), 401
+        return jsonify({'message': 'There was some error, Try again!!'}), 401
+    return jsonify({'message': 'Invalid Token'}), 401
 
 # this is for fetching all products purchased by the user [method = 2]
+
+
 @app.route("/uppurchased", methods=['POST'])
 def uppurchased():
     data = request.get_json()
@@ -289,10 +375,12 @@ def uppurchased():
                 mysql.closeCursor()
                 return jsonify(user_details), 200
             return jsonify({'message': 'There are no purchased products by user'}), 200
-        return jsonify({ 'message': 'There was some error, Try again!!' }), 401
-    return jsonify({ 'message': 'Invalid Token' }), 401
+        return jsonify({'message': 'There was some error, Try again!!'}), 401
+    return jsonify({'message': 'Invalid Token'}), 401
 
 # this is for fetching product reviews
+
+
 @app.route("/getprodreviews", methods=['GET'])
 def getprodreviews():
     mysql = database.Database()
@@ -303,9 +391,11 @@ def getprodreviews():
         mysql.closeCursor()
         return jsonify(pdetails), 200
     else:
-        return jsonify({ 'message': 'There are no reviews for this product' }), 200
-    
+        return jsonify({'message': 'There are no reviews for this product'}), 200
+
 # this is for fetching product average ratings
+
+
 @app.route("/getprodratings", methods=['GET'])
 def getprodratings():
     mysql = database.Database()
@@ -316,9 +406,11 @@ def getprodratings():
         mysql.closeCursor()
         return jsonify(pdetails), 200
     else:
-        return jsonify({ 'message': 'There are no reviews for this product' }), 200
-    
+        return jsonify({'message': 'There are no reviews for this product'}), 200
+
 # this is for inserting product review
+
+
 @app.route("/insertprodreviews", methods=['POST'])
 def insertprodreviews():
     mysql = database.Database()
@@ -330,15 +422,18 @@ def insertprodreviews():
     result = mysql.insertProductReviews(user_id, rating, comment, product_id)
     if result > 0:
         mysql.closeCursor()
-        return jsonify({ 'message': 'added product rating successfully' }), 200
-    return jsonify({ 'message': 'There was some error, Try again!!' }), 401
+        return jsonify({'message': 'added product rating successfully'}), 200
+    return jsonify({'message': 'There was some error, Try again!!'}), 401
+
 
 @app.route("/dummy", methods=["POST"])
 def dummy():
-    temp = {"temp":"temp"}
+    temp = {"temp": "temp"}
     return maketoken.encode_token(app, temp, "2")
 
 # this is for updating the product status (admin approval)
+
+
 @app.route("/productstatus", methods=['PATCH'])
 def productstatus():
     mysql = database.Database()
@@ -348,11 +443,13 @@ def productstatus():
     result = mysql.updateProducts(pid, pstatus)
     if result > 0:
         mysql.closeCursor()
-        return jsonify({ 'message': 'success' }), 200
+        return jsonify({'message': 'success'}), 200
     else:
-        return jsonify({ 'message': 'There was some error, Try again!!' }), 401
+        return jsonify({'message': 'There was some error, Try again!!'}), 401
 
 # this is for google login
+
+
 @app.route('/googlelogin', methods=['POST'])
 def googlelogin():
     login_data = request.json
