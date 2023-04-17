@@ -28,7 +28,7 @@ def signup():
     password = str(payload['password'])
     q1 = payload['maiden']
     q2 = payload['artist']
-    profile = google_id = contact = street = state = country = zip = "dummy"
+    profile = google_id = contact = street = city = state = country = zip = "dummy"
     # print(fname, lname, email_id, password, password, q1, q2, q3)
 
     # look for the account, if it already exists
@@ -49,7 +49,7 @@ def signup():
 
     # inserting the user record
     result = mysql.insertUser(fname, lname, email_id, salt, hashed_password, 
-                              q1, q2, profile, google_id, contact, street, state, country, zip)
+                              q1, q2, profile, google_id, contact, street, city, state, country, zip)
     if result > 0:
         user_id = mysql.cur.fetchall()
         mysql.closeCursor()
@@ -459,6 +459,7 @@ def productstatus():
 def googlelogin():
     login_data = request.json
     try:
+        print(login_data['credential'], login_data['clientId'] == creds['CLIENT_ID'])
         idinfo = id_token.verify_oauth2_token(login_data['credential'], Request(), creds['CLIENT_ID'])
         if idinfo['iss'] not in ['accounts.google.com', 'https://accounts.google.com']:
             raise ValueError('Wrong issuer.')
@@ -472,7 +473,7 @@ def googlelogin():
 
         fname = name[0]
         lname = name[1]
-        salt = password = q1 = q2 = contact = street = state = country = zip = "dummy"
+        salt = password = q1 = q2 = contact = street = city = state = country = zip = "dummy"
 
         # look for the account, if it already exists
         mysql = database.Database()  # database class object
@@ -483,7 +484,7 @@ def googlelogin():
 
         if result == 0:
             mysql.insertUser(fname, lname, email_id, salt, password, q1, q2, 
-                             picture, google_id, contact, street, state, country, zip)
+                             picture, google_id, contact, street, city, state, country, zip)
         mysql.closeCursor()
 
         mysql = database.Database()  # database class object

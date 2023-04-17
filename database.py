@@ -33,9 +33,9 @@ class Database:
         return result
 
     # adding the user details in the database
-    def insertUser(self, fname, lname, email_id, salt, password, q1, q2, profile, google_id, contact, street, state, country, zip):
+    def insertUser(self, fname, lname, email_id, salt, password, q1, q2, profile, google_id, contact, street, city, state, country, zip):
         self.cur.execute("INSERT INTO User (FName, LName, EmailID, Salt, Password, Q1, Q2, ProfilePic, GoogleID, Contact, Street, City, State, Country, Zip) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
-                         (fname, lname, email_id, salt, password, q1, q2, profile, google_id, contact, street, state, country, zip))
+                         (fname, lname, email_id, salt, password, q1, q2, profile, google_id, contact, street, city, state, country, zip))
         self.con.commit()
         result = self.cur.execute(
             "SELECT UserID FROM User WHERE FName = %s AND LName = %s and EmailID = %s", (fname, lname, email_id))
