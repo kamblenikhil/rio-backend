@@ -6,6 +6,7 @@ import yaml
 import maketoken
 import database
 import bcrypt
+import googlemaps
 
 app = Flask(__name__)
 CORS(app)
@@ -27,7 +28,7 @@ def signup():
     password = str(payload['password'])
     q1 = payload['maiden']
     q2 = payload['artist']
-    profile = google_id = "dummy"
+    profile = google_id = contact = street = state = country = zip = "dummy"
     # print(fname, lname, email_id, password, password, q1, q2, q3)
 
     # look for the account, if it already exists
@@ -47,8 +48,8 @@ def signup():
     # print(salt, hashed_password)
 
     # inserting the user record
-    result = mysql.insertUser(fname, lname, email_id,
-                              salt, hashed_password, q1, q2, profile, google_id)
+    result = mysql.insertUser(fname, lname, email_id, salt, hashed_password, 
+                              q1, q2, profile, google_id, contact, street, state, country, zip)
     if result > 0:
         user_id = mysql.cur.fetchall()
         mysql.closeCursor()
@@ -194,6 +195,12 @@ def insertproduct():
     sstate = pdata['sstate']
     scountry = pdata['scountry']
     szip = pdata['szip']
+
+    address = sstreet + scity + sstate + scountry + szip
+    gmaps_key = googlemaps.Client(key="AIzaSyAp-O3TH6q8MwUykZeds32EyxW1twK7-t0")
+    g = gmaps_key.geocode(address)
+    slat = g[0]["geometry"]["location"]["lat"]
+    slong = g[0]["geometry"]["location"]["lng"]
     # print(pname, pdesc, pprice, pcategory, pimgurl, sname, scontact, sstreet, scity, sstate, scountry, szip)
 
     user_id = request.args.get('id')
@@ -202,7 +209,7 @@ def insertproduct():
     if maketoken.decode_token(app, user_id, token):
         # look for the account, if it already exists
         pid = mysql.insertProduct(user_id, pname, pdesc, pprice, pcategory,
-                                  pimgurl, sname, scontact, sstreet, scity, sstate, scountry, szip)
+                                  pimgurl, sname, scontact, sstreet, scity, sstate, scountry, szip, slat, slong)
         if pid > 0:
             mysql.closeCursor()
             return jsonify({'message': 'product added successfully'}), 200
@@ -448,14 +455,11 @@ def productstatus():
         return jsonify({'message': 'There was some error, Try again!!'}), 401
 
 # this is for google login
-
-
 @app.route('/googlelogin', methods=['POST'])
 def googlelogin():
     login_data = request.json
     try:
-        idinfo = id_token.verify_oauth2_token(
-            login_data['credential'], Request(), creds['CLIENT_ID'])
+        idinfo = id_token.verify_oauth2_token(login_data['credential'], Request(), creds['CLIENT_ID'])
         if idinfo['iss'] not in ['accounts.google.com', 'https://accounts.google.com']:
             raise ValueError('Wrong issuer.')
         # ID token is valid. Get the user's Google Account ID from the decoded token.
@@ -468,7 +472,7 @@ def googlelogin():
 
         fname = name[0]
         lname = name[1]
-        salt = password = q1 = q2 = "dummy"
+        salt = password = q1 = q2 = contact = street = state = country = zip = "dummy"
 
         # look for the account, if it already exists
         mysql = database.Database()  # database class object
@@ -478,8 +482,8 @@ def googlelogin():
             mysql.updateUserAsGoogleUser(email_id, google_id)
 
         if result == 0:
-            mysql.insertUser(fname, lname, email_id, salt,
-                             password, q1, q2, picture, google_id)
+            mysql.insertUser(fname, lname, email_id, salt, password, q1, q2, 
+                             picture, google_id, contact, street, state, country, zip)
         mysql.closeCursor()
 
         mysql = database.Database()  # database class object
@@ -492,12 +496,11 @@ def googlelogin():
             'last_name': user_details[0]['LName'],
             'profile_pic': user_details[0]['ProfilePic']
         }
-        print("its working")
+        
         return maketoken.encode_token(app, response, user_details[0]['UserID'])
         # print(user_id, fname, lname, email_id, picture)
     except ValueError:
         # Invalid token
-        print("error")
         return jsonify({'message': 'There was some error'}), 401
 
 

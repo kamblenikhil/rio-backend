@@ -29,22 +29,22 @@ class Database:
     # fetching the user profile details from the database
     def getuProfile(self, user_id):
         result = self.cur.execute(
-            "SELECT Fname, LName, EmailID, ProfilePic FROM User where UserID = %s", (user_id))
+            "SELECT Fname, LName, EmailID, ProfilePic, Contact, Street, City, State, Country, Zip FROM User where UserID = %s", (user_id))
         return result
 
     # adding the user details in the database
-    def insertUser(self, fname, lname, email_id, salt, password, q1, q2, profile, google_id):
-        self.cur.execute("INSERT INTO User (FName, LName, EmailID, Salt, Password, Q1, Q2, ProfilePic, GoogleID) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)",
-                         (fname, lname, email_id, salt, password, q1, q2, profile, google_id))
+    def insertUser(self, fname, lname, email_id, salt, password, q1, q2, profile, google_id, contact, street, state, country, zip):
+        self.cur.execute("INSERT INTO User (FName, LName, EmailID, Salt, Password, Q1, Q2, ProfilePic, GoogleID, Contact, Street, City, State, Country, Zip) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
+                         (fname, lname, email_id, salt, password, q1, q2, profile, google_id, contact, street, state, country, zip))
         self.con.commit()
         result = self.cur.execute(
             "SELECT UserID FROM User WHERE FName = %s AND LName = %s and EmailID = %s", (fname, lname, email_id))
         return result
     
     # adding the product details in the database
-    def insertProduct(self, user_id, pname, pdesc, pprice, pcategory, pimgurl, sname, scontact, sstreet, scity, sstate, scountry, szip):
-        self.cur.execute("INSERT INTO Product (Name, Description, Price, Category, ImageURL, SIName, SIContact, SIStreet, SICity, SIState, SICountry, SIZip) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
-                         (pname, pdesc, pprice, pcategory, pimgurl, sname, scontact, sstreet, scity, sstate, scountry, szip))
+    def insertProduct(self, user_id, pname, pdesc, pprice, pcategory, pimgurl, sname, scontact, sstreet, scity, sstate, scountry, szip, slat, slong):
+        self.cur.execute("INSERT INTO Product (Name, Description, Price, Category, ImageURL, SIName, SIContact, SIStreet, SICity, SIState, SICountry, SIZip, SILat, SILon) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
+                         (pname, pdesc, pprice, pcategory, pimgurl, sname, scontact, sstreet, scity, sstate, scountry, szip, slat, slong))
         self.con.commit()
         res = self.cur.execute(
             "SELECT ProductID FROM Product WHERE Name = %s AND Category = %s AND ImageURL = %s AND SIName = %s AND SIZip = %s", (pname, pcategory, pimgurl, sname, szip))
