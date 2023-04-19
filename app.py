@@ -327,7 +327,8 @@ def getproduct():
                 "SIState": prods["SIState"],
                 "SIStreet": prods["SIStreet"],
                 "SIZip": prods["SIZip"],
-
+                "SILat": prods["SILat"],
+                "SILon": prods["SILon"]
             }
             response.append(res)
         mysql.closeCursor()
@@ -397,9 +398,28 @@ def uppurchased():
         if result > 0:
             res = mysql.getUserProducts(int(user_id), 2)
             if res > 0:
-                user_details = mysql.cur.fetchall()
+                product_details = mysql.cur.fetchall()
+                response = []
+                for prods in product_details:
+                    res = {
+                        'pid': prods['ProductID'],
+                        'pname': prods['Name'],
+                        'rating': prods['Rating'],
+                        'img': prods['ImageURL'],
+                        'price': prods['Price'],
+                        'category': prods['Category'],
+                        'desc': prods['Description'],
+                        'SICity': prods['SICity'],
+                        "SIContact": prods["SIContact"],
+                        "SICountry": prods["SICountry"],
+                        "SIName": prods["SIName"],
+                        "SIState": prods["SIState"],
+                        "SIStreet": prods["SIStreet"],
+                        "SIZip": prods["SIZip"],
+                    }
+                    response.append(res)
                 mysql.closeCursor()
-                return jsonify(user_details), 200
+                return jsonify(response), 200
             return jsonify({'message': 'There are no purchased products by user'}), 200
         return jsonify({'message': 'There was some error, Try again!!'}), 401
     return jsonify({'message': 'Invalid Token'}), 401
