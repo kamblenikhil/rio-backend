@@ -10,11 +10,14 @@ def encode_token(app, response, user_id):
 
 def decode_token(app, user_id, token):
     try:
-        data = jwt.decode(token, app.config['SECRET_KEY'], 'HS256')
+        data = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
         if data["user_id"] == user_id:
             return True
-    except:
-        print("inside exception")
+    except jwt.ExpiredSignatureError:
+        print("Token expired")
+        return False
+    except jwt.InvalidTokenError:
+        print("Invalid token")
         return False
 
     return False

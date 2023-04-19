@@ -342,23 +342,42 @@ def getproduct():
 def upposted():
     data = request.get_json()
     email_id = data['emailId']
-
     mysql = database.Database()
     user_id = request.args.get('id')
     token = request.headers['Authorization'].split(" ")[1]
+    token = token[1:-1]
     # user token validation
-    if maketoken.decode_token(app, user_id, token):
+    if maketoken.decode_token(app, int(user_id), token):
         result = mysql.getUser(email_id)
         # look for the account, if it exists or not
         if result > 0:
             res = mysql.getUserProducts(int(user_id), 1)
             if res > 0:
-                user_details = mysql.cur.fetchall()
+                product_details = mysql.cur.fetchall()
+                response = []
+                for prods in product_details:
+                    res = {
+                        'pid': prods['ProductID'],
+                        'pname': prods['Name'],
+                        'rating': prods['Rating'],
+                        'img': prods['ImageURL'],
+                        'price': prods['Price'],
+                        'category': prods['Category'],
+                        'desc': prods['Description'],
+                        'SICity': prods['SICity'],
+                        "SIContact": prods["SIContact"],
+                        "SICountry": prods["SICountry"],
+                        "SIName": prods["SIName"],
+                        "SIState": prods["SIState"],
+                        "SIStreet": prods["SIStreet"],
+                        "SIZip": prods["SIZip"],
+                    }
+                    response.append(res)
                 mysql.closeCursor()
-                return jsonify(user_details), 200
+                return jsonify(response), 200
             return jsonify({'message': 'There are no posted products by user'}), 200
         return jsonify({'message': 'There was some error, Try again!!'}), 401
-    return jsonify({'message': 'Invalid Token'}), 401
+    return jsonify({'message': 'Hello Invalid Token'}), 401
 
 # this is for fetching all products purchased by the user [method = 2]
 
@@ -506,4 +525,4 @@ def googlelogin():
 
 
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=True)
