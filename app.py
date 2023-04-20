@@ -493,6 +493,20 @@ def productstatus():
     else:
         return jsonify({'message': 'There was some error, Try again!!'}), 401
 
+# this is for getting seller id of a product
+@app.route("/getsellerid", methods=['POST'])
+def getsellerid():
+    mysql = database.Database()
+    data = request.get_json()
+    product_id = data['productid']
+    result = mysql.getSellerIdOfProduct(product_id)
+    if result > 0:
+        pdetails = mysql.cur.fetchall()
+        mysql.closeCursor()
+        return jsonify(pdetails), 200
+    else:
+        return jsonify({'message': 'No Seller Found'}), 401
+
 # this is for google login
 @app.route('/googlelogin', methods=['POST'])
 def googlelogin():

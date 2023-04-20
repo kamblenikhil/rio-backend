@@ -103,6 +103,12 @@ class Database:
         result = self.cur.execute("UPDATE Product SET Status = %s WHERE ProductID = %s", (pstatus, pid))
         self.con.commit()
         return result
+    
+    # get seller id of particular product
+    def getSellerIdOfProduct(self, productid):
+        result = self.cur.execute("SELECT UserID from user_product WHERE ProductID = %s", (productid))
+        self.con.commit()
+        return result
 
     # updating the password
     def updatePass(self, email, pwd):
