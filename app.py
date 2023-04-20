@@ -163,7 +163,7 @@ def updatepass():
 
 
 @app.route("/getuprofile", methods=['GET'])
-def uprofile():
+def userprofile():
     user_id = request.args.get('id')
 
     # look for the account, if it exists or not
@@ -175,6 +175,31 @@ def uprofile():
 
         return jsonify(user_details), 200
     return jsonify({'message': 'There was some error, Try again!!'}), 401
+
+# this is for updating the profile details
+
+
+@app.route("/updateprofile", methods=['POST'])
+def updateprofile():
+    data = request.get_json()
+    user_id = request.args.get('id')
+    contact = data['contact']
+    street = data['street']
+    city = data['city']
+    state = data['state']
+    country = data['country']
+    zip = data['zip']
+
+    # look for the account, if it exists or not
+    mysql = database.Database()
+    result = mysql.updateUser(user_id, contact, street, city, state, country, zip)
+    if result > 0:
+        user_details = mysql.cur.fetchall()
+        mysql.closeCursor()
+        return jsonify(user_details), 200
+    else:
+        return jsonify({'message': 'There was some error, Try again!!'}), 401
+
 
 # this is for inserting product details
 

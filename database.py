@@ -29,7 +29,7 @@ class Database:
     # fetching the user profile details from the database
     def getuProfile(self, user_id):
         result = self.cur.execute(
-            "SELECT Fname, LName, EmailID, ProfilePic, Contact, Street, City, State, Country, Zip FROM User where UserID = %s", (user_id))
+            "SELECT FName, LName, EmailID, ProfilePic, Contact, Street, City, State, Country, Zip FROM User where UserID = %s", (user_id))
         return result
 
     # adding the user details in the database
@@ -39,6 +39,12 @@ class Database:
         self.con.commit()
         result = self.cur.execute(
             "SELECT UserID FROM User WHERE FName = %s AND LName = %s and EmailID = %s", (fname, lname, email_id))
+        return result
+    
+       # updating the user details in the database
+    def updateUser(self, userid, contact, street, city, state, country, zip):
+        result = self.cur.execute("UPDATE User SET Contact = %s, Street = %s, City = %s, State = %s, Country = %s, Zip = %s WHERE UserID = %s", (contact, street, city, state, country, zip, userid))
+        self.con.commit()
         return result
     
     # adding the product details in the database
