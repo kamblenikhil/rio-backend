@@ -501,7 +501,7 @@ def insertprodreviews():
 def dummy():
     # temp = {"temp": "temp"}
     # return maketoken.encode_token(app, temp, "2")
-    return "Hello World"
+    return "Hello! This site works..."
 # this is for updating the product status (admin approval)
 
 
