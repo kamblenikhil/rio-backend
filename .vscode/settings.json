@@ -1,0 +1,4 @@
+{
+    "appService.defaultWebAppToDeploy": "undefined/subscriptions/d51d371b-e657-4e0c-959a-825d6911821e/resourceGroups/appsvc_linux_centralus/providers/Microsoft.Web/sites/rio-rentals",
+    "appService.deploySubpath": "."
+}
