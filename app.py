@@ -497,11 +497,11 @@ def insertprodreviews():
     return jsonify({'message': 'There was some error, Try again!!'}), 401
 
 
-@app.route("/dummy", methods=["POST"])
+@app.route("/dummy", methods=["GET"])
 def dummy():
-    temp = {"temp": "temp"}
-    return maketoken.encode_token(app, temp, "2")
-
+    # temp = {"temp": "temp"}
+    # return maketoken.encode_token(app, temp, "2")
+    return "Hello World"
 # this is for updating the product status (admin approval)
 
 
