@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS, cross_origin
 from google.oauth2 import id_token
 from google.auth.transport.requests import Request
-# import yaml
+import yaml
 import maketoken
 import database
 import bcrypt
@@ -14,6 +14,7 @@ CORS(app)
 
 # secret credentials
 # creds = yaml.safe_load(open('credentials.yaml'))
+# app.config['SECRET_KEY'] = creds['APP_SECRET']
 app.config['SECRET_KEY'] = os.environ.get('APP_SECRET')
 
 # this is the part of user registration (signup)
@@ -540,6 +541,8 @@ def googlelogin():
     try:
         print(login_data['credential'], login_data['clientId'] == os.environ.get('CLIENT_ID'))
         idinfo = id_token.verify_oauth2_token(login_data['credential'], Request(), os.environ.get('CLIENT_ID'))
+        # print(login_data['credential'], login_data['clientId'] == creds['CLIENT_ID'])
+        # idinfo = id_token.verify_oauth2_token(login_data['credential'], Request(), creds['CLIENT_ID'])
         if idinfo['iss'] not in ['accounts.google.com', 'https://accounts.google.com']:
             raise ValueError('Wrong issuer.')
         # ID token is valid. Get the user's Google Account ID from the decoded token.

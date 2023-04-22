@@ -1,7 +1,8 @@
 import pymysql
 import random
-# import yaml
+import yaml
 import os
+import ssl
 
 # importing the credentials file
 # creds = yaml.safe_load(open('credentials.yaml'))
@@ -10,14 +11,26 @@ class Database:
 
     # setting up the database connection
     def __init__(self):
-        host = os.environ.get('DB_HOST'),
-        user = os.environ.get('DB_USER'),
-        password = os.environ.get('DB_PASSWORD'),
-        db = os.environ.get('DB_DATABASE'),
+        # host = os.environ.get('DB_HOST')
+        # user = os.environ.get('DB_USER')
+        # password = os.environ.get('DB_PASSWORD')
+        # db = os.environ.get('DB_DATABASE')
+        
+        ssl_context = ssl.create_default_context(cafile='certificate.pem')
+        ssl_options = {'ssl': ssl_context}
+        # host = creds['DB_HOST']
+        # user = creds['DB_USER']
+        # password = creds['DB_PASSWORD']
+        # db = creds['DB_DATABASE']
 
         # create the database connection and cursor
         self.con = pymysql.connect(
-            host=host[0], user=user[0], password=password[0], db=db[0], cursorclass=pymysql.cursors.DictCursor)
+            host = os.environ.get('DB_HOST'),
+            user = os.environ.get('DB_USER'),
+            password = os.environ.get('DB_PASSWORD'),
+            db = os.environ.get('DB_DATABASE'),
+            charset='utf8mb4',
+            cursorclass=pymysql.cursors.DictCursor, **ssl_options)
         
         self.cur = self.con.cursor()
 
