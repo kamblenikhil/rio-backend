@@ -539,7 +539,7 @@ def getsellerid():
 def googlelogin():
     login_data = request.json
     try:
-        print(login_data['credential'], login_data['clientId'] == os.environ.get('CLIENT_ID'))
+        # print(login_data['credential'], login_data['clientId'] == os.environ.get('CLIENT_ID'))
         idinfo = id_token.verify_oauth2_token(login_data['credential'], Request(), os.environ.get('CLIENT_ID'))
         # print(login_data['credential'], login_data['clientId'] == creds['CLIENT_ID'])
         # idinfo = id_token.verify_oauth2_token(login_data['credential'], Request(), creds['CLIENT_ID'])

@@ -82,7 +82,7 @@ class Database:
     
     # fetching product reviews
     def getProductReviews(self, product_id):
-        result = self.cur.execute("SELECT * FROM review WHERE ProductID = %s", (product_id))
+        result = self.cur.execute("SELECT User.FName, User.LName, Review.Rating, Review.Comment FROM User INNER JOIN Review ON User.UserID = Review.UserID WHERE Review.ProductID = %s", (product_id))
         return result
     
     # fetching product ratings
