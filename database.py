@@ -1,18 +1,19 @@
 import pymysql
 import random
-import yaml
+# import yaml
+import os
 
 # importing the credentials file
-creds = yaml.safe_load(open('credentials.yaml'))
+# creds = yaml.safe_load(open('credentials.yaml'))
 
 class Database:
 
     # setting up the database connection
     def __init__(self):
-        host = creds['DB_HOST'],
-        user = creds['DB_USER'],
-        password = creds['DB_PASSWORD'],
-        db = creds['DB_DATABASE'],
+        host = os.environ.get('DB_HOST'),
+        user = os.environ.get('DB_USER'),
+        password = os.environ.get('DB_PASSWORD'),
+        db = os.environ.get('DB_DATABASE'),
 
         # create the database connection and cursor
         self.con = pymysql.connect(
