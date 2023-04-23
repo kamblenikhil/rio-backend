@@ -8,6 +8,7 @@ import database
 import bcrypt
 import googlemaps
 import os
+import datetime
 
 app = Flask(__name__)
 CORS(app)
@@ -18,8 +19,6 @@ CORS(app)
 app.config['SECRET_KEY'] = os.environ.get('APP_SECRET')
 
 # this is the part of user registration (signup)
-
-
 @app.route("/signup", methods=['POST'])
 def signup():
     mysql = database.Database()
@@ -67,8 +66,6 @@ def signup():
         return jsonify({'message': 'There was some error, Try again!!'}), 401
 
 # this will be normal user login
-
-
 @app.route("/login", methods=['POST'])
 def login():
     payload = request.get_json()
@@ -101,8 +98,6 @@ def login():
     return jsonify({'message': 'account not found'}), 403
 
 # this is for the forgot password
-
-
 @app.route("/forgot", methods=['POST'])
 def forgot():
     data = request.get_json()
@@ -130,8 +125,6 @@ def forgot():
     return jsonify({'message': 'Invalid Token'}), 401
 
 # this is for updating the password
-
-
 @app.route("/updatepass", methods=['POST'])
 def updatepass():
     data = request.get_json()
@@ -162,8 +155,6 @@ def updatepass():
     return jsonify({'message': 'Invalid Token'}), 401
 
 # this is for fetching user details
-
-
 @app.route("/getuprofile", methods=['GET'])
 def userprofile():
     user_id = request.args.get('id')
@@ -179,8 +170,6 @@ def userprofile():
     return jsonify({'message': 'There was some error, Try again!!'}), 401
 
 # this is for updating the profile details
-
-
 @app.route("/updateprofile", methods=['POST'])
 def updateprofile():
     data = request.get_json()
@@ -204,8 +193,6 @@ def updateprofile():
 
 
 # this is for inserting product details
-
-
 @app.route("/insertproduct", methods=['POST'])
 def insertproduct():
     mysql = database.Database()
@@ -245,8 +232,6 @@ def insertproduct():
     return jsonify({'message': 'Invalid Token'}), 401
 
 # this is for fetching the product details for admin panel
-
-
 @app.route("/getallproducts", methods=['GET'])
 def getallproducts():
     mysql = database.Database()
@@ -259,8 +244,6 @@ def getallproducts():
         return jsonify({'message': 'There was some error, Try again!!'}), 401
 
 # this is for fetching all the approved product details for user view
-
-
 @app.route("/getapprovedproducts", methods=['GET'])
 def getapprovedproducts():
     mysql = database.Database()
@@ -294,8 +277,6 @@ def getapprovedproducts():
         return jsonify({'message': 'There are no approved products'}), 401
 
 # this is for fetching all the rejected product details
-
-
 @app.route("/getrejectedproducts", methods=['GET'])
 def getrejectedproducts():
     mysql = database.Database()
@@ -328,8 +309,6 @@ def getrejectedproducts():
         return jsonify({'message': 'There are no rejected products'}), 401
 
 # this is for fetching a single product details for user view
-
-
 @app.route("/getproduct", methods=['GET'])
 def getproduct():
     product_id = request.args.get('productid')
@@ -364,8 +343,6 @@ def getproduct():
         return jsonify({'message': 'This product does not exist'}), 401
 
 # this is for fetching all products posted by the user [method = 1]
-
-
 @app.route("/upposted", methods=['POST'])
 def upposted():
     data = request.get_json()
@@ -408,8 +385,6 @@ def upposted():
     return jsonify({'message': 'Hello Invalid Token'}), 401
 
 # this is for fetching all products purchased by the user [method = 2]
-
-
 @app.route("/uppurchased", methods=['POST'])
 def uppurchased():
     data = request.get_json()
@@ -451,9 +426,20 @@ def uppurchased():
         return jsonify({'message': 'There was some error, Try again!!'}), 401
     return jsonify({'message': 'Invalid Token'}), 401
 
+# rent a product
+@app.route("/rentaproduct", methods=['POST'])
+def rentaproduct():
+    mysql = database.Database()
+    user_id = request.args.get('id')
+    product_id = request.args.get('product_id')
+    result = mysql.rentaproduct(user_id, product_id)
+    if result > 0:
+        mysql.closeCursor()
+        return jsonify({'message': 'success'}), 200
+    else:
+        return jsonify({'message': 'There was some error, Try again!!'}), 401
+
 # this is for fetching product reviews
-
-
 @app.route("/getprodreviews", methods=['GET'])
 def getprodreviews():
     mysql = database.Database()
@@ -466,14 +452,13 @@ def getprodreviews():
     else:
         return jsonify({'message': 'There are no reviews for this product'}), 200
 
-# this is for fetching product average ratings
-
-
-@app.route("/getprodratings", methods=['GET'])
-def getprodratings():
+# this is for fetching if the user has rented the given product or not
+@app.route("/getrentedproductstatus", methods=['GET'])
+def getrentedproductstatus():
     mysql = database.Database()
-    product_id = request.args.get('productid')
-    result = mysql.getProductRatings(product_id)
+    user_id = request.args.get('id')
+    product_id = request.args.get('product_id')
+    result = mysql.getRentedProductStatus(user_id, product_id)
     if result > 0:
         pdetails = mysql.cur.fetchall()
         mysql.closeCursor()
@@ -482,8 +467,6 @@ def getprodratings():
         return jsonify({'message': 'There are no reviews for this product'}), 200
 
 # this is for inserting product review
-
-
 @app.route("/insertprodreviews", methods=['POST'])
 def insertprodreviews():
     mysql = database.Database()
@@ -498,15 +481,41 @@ def insertprodreviews():
         return jsonify({'message': 'added product rating successfully'}), 200
     return jsonify({'message': 'There was some error, Try again!!'}), 401
 
+# this is for filing a complaint
+@app.route("/fileacomplaint", methods=['POST'])
+def fileacomplaint():
+    mysql = database.Database()
+    pdata = request.get_json()
+    user_id = request.args.get('id')
+    product_id = request.args.get('product_id')
+    description = pdata['description']
+    today = datetime.datetime.now()
+    date = today.strftime('%Y-%m-%d %H:%M:%S')
+    result = mysql.fileacomplaint(product_id, description, user_id, date)
+    if result > 0:
+        mysql.closeCursor()
+        return jsonify({'message': 'you complaint was successfully posted'}), 200
+    return jsonify({'message': 'There was some error, Try again!!'}), 401
 
-@app.route("/dummy", methods=["GET"])
+# this is for getting complaint's
+@app.route("/getcomplaints", methods=['GET'])
+def getcomplaints():
+    mysql = database.Database()
+    result = mysql.getcomplaints()
+    if result > 0:
+        complaints = mysql.cur.fetchall()
+        mysql.closeCursor()
+        return jsonify(complaints), 200
+    return jsonify({'message': 'There was some error, Try again!!'}), 401
+
+# this is for testing the site
+@app.route("/dummy", methods=["POST"])
 def dummy():
     # temp = {"temp": "temp"}
     # return maketoken.encode_token(app, temp, "2")
-    return "Hello! This site works..."
+    return "Hello! This website works..."
+
 # this is for updating the product status (admin approval)
-
-
 @app.route("/productstatus", methods=['PATCH'])
 def productstatus():
     mysql = database.Database()
