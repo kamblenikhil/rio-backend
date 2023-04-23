@@ -72,13 +72,28 @@ class Database:
         return result
     
     # fetching product ratings
-    def getProductRatings(self, product_id):
-        result = self.cur.execute("SELECT AVG(Rating) AS AverageRatings FROM review WHERE ProductID = %s", (product_id))
+    # def getProductRatings(self, product_id):
+    #     result = self.cur.execute("SELECT AVG(Rating) AS AverageRatings FROM review WHERE ProductID = %s", (product_id))
+    #     return result
+
+    # renting a product
+    def rentaproduct(self, user_id, product_id):
+        method = 2  # method 2 is for renting a product
+        result = self.cur.execute("INSERT INTO user_product (UserID, ProductID, Method) values(%s, %s, %s)", (user_id, product_id, method))
+        self.con.commit()
+        return result
+    
+    # fetching if the user has rented the product or not
+    # --- RESULT = 1 if the product is rented by that user, else 0 ---
+    def getRentedProductStatus(self, user_id, product_id):
+        result = self.cur.execute("SELECT EXISTS(SELECT * FROM user_product WHERE UserID = %s and ProductID = %s and Method = 2) AS Result", (user_id, product_id))
         return result
     
     # inserting product reviews
     def insertProductReviews(self, user_id, rating, comment, product_id):
         result = self.cur.execute("INSERT INTO review (UserID, Rating, Comment, ProductID) VALUES (%s, %s, %s, %s)", (user_id, rating, comment, product_id))
+        self.con.commit()
+        self.cur.execute("UPDATE product SET Rating = (SELECT AVG(Rating) AS AverageRatings FROM review WHERE ProductID = %s) WHERE ProductID = %s", (product_id, product_id))
         self.con.commit()
         return result
     
@@ -115,7 +130,19 @@ class Database:
         result = self.cur.execute("SELECT UserID from user_product WHERE ProductID = %s", (productid))
         self.con.commit()
         return result
+    
+    # filing a complaint
+    def fileacomplaint(self, productid, description, suid, date):
+        result = self.cur.execute("INSERT INTO complaint (ProductID, Description, SUserID, Date) VALUES (%s, %s, %s, %s)", (productid, description, suid, date))
+        self.con.commit()
+        return result
 
+    # getting all complaints
+    def getcomplaints(self):
+        result = self.cur.execute("SELECT * FROM complaint")
+        self.con.commit()
+        return result
+    
     # updating the password
     def updatePass(self, email, pwd):
         result = self.cur.execute("UPDATE User SET Password = %s WHERE EmailID = %s", (pwd, email))

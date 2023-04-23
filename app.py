@@ -7,6 +7,7 @@ import maketoken
 import database
 import bcrypt
 import googlemaps
+import datetime
 
 app = Flask(__name__)
 CORS(app)
@@ -449,6 +450,21 @@ def uppurchased():
         return jsonify({'message': 'There was some error, Try again!!'}), 401
     return jsonify({'message': 'Invalid Token'}), 401
 
+# rent a product
+
+
+@app.route("/rentaproduct", methods=['POST'])
+def rentaproduct():
+    mysql = database.Database()
+    user_id = request.args.get('id')
+    product_id = request.args.get('product_id')
+    result = mysql.rentaproduct(user_id, product_id)
+    if result > 0:
+        mysql.closeCursor()
+        return jsonify({'message': 'success'}), 200
+    else:
+        return jsonify({'message': 'There was some error, Try again!!'}), 401
+
 # this is for fetching product reviews
 
 
@@ -464,14 +480,15 @@ def getprodreviews():
     else:
         return jsonify({'message': 'There are no reviews for this product'}), 200
 
-# this is for fetching product average ratings
+# this is for fetching if the user has rented the given product or not
 
 
-@app.route("/getprodratings", methods=['GET'])
-def getprodratings():
+@app.route("/getrentedproductstatus", methods=['GET'])
+def getrentedproductstatus():
     mysql = database.Database()
-    product_id = request.args.get('productid')
-    result = mysql.getProductRatings(product_id)
+    user_id = request.args.get('id')
+    product_id = request.args.get('product_id')
+    result = mysql.getRentedProductStatus(user_id, product_id)
     if result > 0:
         pdetails = mysql.cur.fetchall()
         mysql.closeCursor()
@@ -496,11 +513,44 @@ def insertprodreviews():
         return jsonify({'message': 'added product rating successfully'}), 200
     return jsonify({'message': 'There was some error, Try again!!'}), 401
 
+# this is for filing a complaint
+
+
+@app.route("/fileacomplaint", methods=['POST'])
+def fileacomplaint():
+    mysql = database.Database()
+    pdata = request.get_json()
+    user_id = request.args.get('id')
+    product_id = request.args.get('product_id')
+    description = pdata['description']
+    today = datetime.datetime.now()
+    date = today.strftime('%Y-%m-%d %H:%M:%S')
+    result = mysql.fileacomplaint(product_id, description, user_id, date)
+    if result > 0:
+        mysql.closeCursor()
+        return jsonify({'message': 'you complaint was successfully posted'}), 200
+    return jsonify({'message': 'There was some error, Try again!!'}), 401
+
+# this is for getting complaint's
+
+
+@app.route("/getcomplaints", methods=['GET'])
+def getcomplaints():
+    mysql = database.Database()
+    result = mysql.getcomplaints()
+    if result > 0:
+        complaints = mysql.cur.fetchall()
+        mysql.closeCursor()
+        return jsonify(complaints), 200
+    return jsonify({'message': 'There was some error, Try again!!'}), 401
+
+
 
 @app.route("/dummy", methods=["POST"])
 def dummy():
-    temp = {"temp": "temp"}
-    return maketoken.encode_token(app, temp, "2")
+    # temp = {"temp": "temp"}
+    # return maketoken.encode_token(app, temp, "2")
+    return "Hello! This website works..."
 
 # this is for updating the product status (admin approval)
 
