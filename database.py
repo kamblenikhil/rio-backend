@@ -5,32 +5,28 @@ import os
 import ssl
 
 # importing the credentials file
-# creds = yaml.safe_load(open('credentials.yaml'))
+creds = yaml.safe_load(open('credentials.yaml'))
 
 class Database:
 
     # setting up the database connection
     def __init__(self):
-        # host = os.environ.get('DB_HOST')
-        # user = os.environ.get('DB_USER')
-        # password = os.environ.get('DB_PASSWORD')
-        # db = os.environ.get('DB_DATABASE')
-        
-        ssl_context = ssl.create_default_context(cafile='certificate.pem')
-        ssl_options = {'ssl': ssl_context}
-        # host = creds['DB_HOST']
-        # user = creds['DB_USER']
-        # password = creds['DB_PASSWORD']
-        # db = creds['DB_DATABASE']
+
+        # ssl_context = ssl.create_default_context(cafile='certificate.pem')
+        # ssl_options = {'ssl': ssl_context}
+        host = creds['DB_HOST']
+        user = creds['DB_USER']
+        password = creds['DB_PASSWORD']
+        db = creds['DB_DATABASE']
 
         # create the database connection and cursor
         self.con = pymysql.connect(
-            host = os.environ.get('DB_HOST'),
-            user = os.environ.get('DB_USER'),
-            password = os.environ.get('DB_PASSWORD'),
-            db = os.environ.get('DB_DATABASE'),
-            charset='utf8mb4',
-            cursorclass=pymysql.cursors.DictCursor, **ssl_options)
+            # host = os.environ.get('DB_HOST'),
+            # user = os.environ.get('DB_USER'),
+            # password = os.environ.get('DB_PASSWORD'),
+            # db = os.environ.get('DB_DATABASE'),
+            host = host, user = user, password = password, db = db, cursorclass=pymysql.cursors.DictCursor)
+            # charset='utf8mb4', cursorclass=pymysql.cursors.DictCursor, **ssl_options)
         
         self.cur = self.con.cursor()
 
@@ -85,17 +81,16 @@ class Database:
         result = self.cur.execute("SELECT User.FName, User.LName, Review.Rating, Review.Comment FROM User INNER JOIN Review ON User.UserID = Review.UserID WHERE Review.ProductID = %s", (product_id))
         return result
     
-    # fetching product ratings
-    # def getProductRatings(self, product_id):
-    #     result = self.cur.execute("SELECT AVG(Rating) AS AverageRatings FROM review WHERE ProductID = %s", (product_id))
-    #     return result
-
     # renting a product
     def rentaproduct(self, user_id, product_id):
-        method = 2  # method 2 is for renting a product
-        result = self.cur.execute("INSERT INTO user_product (UserID, ProductID, Method) values(%s, %s, %s)", (user_id, product_id, method))
+        # method 2 is for renting a product
+        self.cur.execute("INSERT INTO user_product (UserID, ProductID, Method) values(%s, %s, %s)", (user_id, product_id, 2))
         self.con.commit()
-        return result
+        self.cur.execute("UPDATE Product SET Status = %s WHERE ProductID = %s", (4, product_id))
+        self.con.commit()
+        data = self.cur.execute("SELECT EmailID from user WHERE UserID = %s", (user_id))
+        self.con.commit()
+        return data
     
     # fetching if the user has rented the product or not
     # --- RESULT = 1 if the product is rented by that user, else 0 ---
@@ -142,6 +137,12 @@ class Database:
     # get seller id of particular product
     def getSellerIdOfProduct(self, productid):
         result = self.cur.execute("SELECT UserID from user_product WHERE ProductID = %s", (productid))
+        self.con.commit()
+        return result
+    
+    # get product recommendations
+    def getProductRecommendation(self, category):
+        result = self.cur.execute("SELECT * FROM product where Category = %s", (category))
         self.con.commit()
         return result
     

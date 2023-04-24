@@ -9,14 +9,16 @@ import bcrypt
 import googlemaps
 import os
 import datetime
+import requests
+import json
 
 app = Flask(__name__)
 CORS(app)
 
 # secret credentials
-# creds = yaml.safe_load(open('credentials.yaml'))
-# app.config['SECRET_KEY'] = creds['APP_SECRET']
-app.config['SECRET_KEY'] = os.environ.get('APP_SECRET')
+creds = yaml.safe_load(open('credentials.yaml'))
+app.config['SECRET_KEY'] = creds['APP_SECRET']
+# app.config['SECRET_KEY'] = os.environ.get('APP_SECRET')
 
 # this is the part of user registration (signup)
 @app.route("/signup", methods=['POST'])
@@ -175,8 +177,7 @@ def updateprofile():
 
     # look for the account, if it exists or not
     mysql = database.Database()
-    result = mysql.updateUser(user_id, contact, street,
-                              city, state, country, zip)
+    result = mysql.updateUser(user_id, contact, street, city, state, country, zip)
     if result > 0:
         user_details = mysql.cur.fetchall()
         mysql.closeCursor()
@@ -205,8 +206,7 @@ def insertproduct():
     szip = pdata['szip']
 
     address = sstreet + scity + sstate + scountry + szip
-    gmaps_key = googlemaps.Client(
-        key="AIzaSyAp-O3TH6q8MwUykZeds32EyxW1twK7-t0")
+    gmaps_key = googlemaps.Client(key=creds['GOOGLE_MAPS'])
     g = gmaps_key.geocode(address)
     slat = g[0]["geometry"]["location"]["lat"]
     slong = g[0]["geometry"]["location"]["lng"]
@@ -431,8 +431,21 @@ def rentaproduct():
     product_id = request.args.get('product_id')
     result = mysql.rentaproduct(user_id, product_id)
     if result > 0:
+        res = mysql.cur.fetchall()
+        emailId = res[0]['EmailID']
+        print(emailId)
         mysql.closeCursor()
-        return jsonify({'message': 'success'}), 200
+        # email confirmation receipt to the sender
+        url = creds['RAPID_API_URL']
+
+        payload = {"personalizations": [{"to": [{ "email": emailId }],"subject": "RIO - Payment Confirmation Receipt"}], "from": { "email": "no-reply@rio.com" }, "content": [{"type": "text/plain","value": "Thank you for renting the Product from RIO. Your payment was received successfully."}]}
+
+        headers = {"content-type": "application/json","X-RapidAPI-Key": creds['X-RapidAPI-Key'],"X-RapidAPI-Host": creds['X-RapidAPI-Host']}
+
+        response = requests.post(url, json = payload, headers = headers)
+        if response.status_code == 202:
+            return jsonify({'message': 'Product Rented Successfully, Payment Email Sent'}), 200
+        return jsonify({{'message': 'Product Rented Successfully, Payment Email Not Sent.'}}), 401
     else:
         return jsonify({'message': 'There was some error, Try again!!'}), 401
 
@@ -453,9 +466,6 @@ def getprodreviews():
 @app.route("/getrentedproductstatus", methods=['GET'])
 def getrentedproductstatus():
     mysql = database.Database()
-    user_id = request.args.get('id')
-    product_id = request.args.get('product_id')
-    result = mysql.getRentedProductStatus(user_id, product_id)
     user_id = request.args.get('id')
     product_id = request.args.get('product_id')
     result = mysql.getRentedProductStatus(user_id, product_id)
@@ -508,12 +518,9 @@ def getcomplaints():
         return jsonify(complaints), 200
     return jsonify({'message': 'There was some error, Try again!!'}), 401
 
-# this is for testing the site
+# this is for testing purpose only
 @app.route("/dummy", methods=["POST"])
 def dummy():
-    # temp = {"temp": "temp"}
-    # return maketoken.encode_token(app, temp, "2")
-    return "Hello! This website works..."
     # temp = {"temp": "temp"}
     # return maketoken.encode_token(app, temp, "2")
     return "Hello! This website works..."
@@ -533,8 +540,6 @@ def productstatus():
         return jsonify({'message': 'There was some error, Try again!!'}), 401
 
 # this is for getting seller id of a product
-
-
 @app.route("/getsellerid", methods=['POST'])
 def getsellerid():
     mysql = database.Database()
@@ -548,17 +553,29 @@ def getsellerid():
     else:
         return jsonify({'message': 'No Seller Found'}), 401
 
+# this is for product recommendation
+@app.route("/getproductrecommendation", methods=['POST'])
+def getproductrecommendation():
+    mysql = database.Database()
+    data = request.get_json()
+    category = data['category']
+    result = mysql.getProductRecommendation(category)
+    if result > 0:
+        pdetails = mysql.cur.fetchall()
+        mysql.closeCursor()
+        return jsonify(pdetails), 200
+    else:
+        return jsonify({'message': 'No Seller Found'}), 401
+    
 # this is for google login
-
-
 @app.route('/googlelogin', methods=['POST'])
 def googlelogin():
     login_data = request.json
     try:
-        # print(login_data['credential'], login_data['clientId'] == os.environ.get('CLIENT_ID'))
-        idinfo = id_token.verify_oauth2_token(login_data['credential'], Request(), os.environ.get('CLIENT_ID'))
-        # print(login_data['credential'], login_data['clientId'] == creds['CLIENT_ID'])
-        # idinfo = id_token.verify_oauth2_token(login_data['credential'], Request(), creds['CLIENT_ID'])
+        print(login_data['credential'],
+              login_data['clientId'] == creds['CLIENT_ID'])
+        idinfo = id_token.verify_oauth2_token(
+            login_data['credential'], Request(), creds['CLIENT_ID'])
         if idinfo['iss'] not in ['accounts.google.com', 'https://accounts.google.com']:
             raise ValueError('Wrong issuer.')
         # ID token is valid. Get the user's Google Account ID from the decoded token.
