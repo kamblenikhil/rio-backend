@@ -49,7 +49,7 @@ def signup():
     # print(salt, hashed_password)
 
     # inserting the user record
-    result = mysql.insertUser(fname, lname, email_id, salt, hashed_password, 
+    result = mysql.insertUser(fname, lname, email_id, salt, hashed_password,
                               q1, q2, profile, google_id, contact, street, city, state, country, zip)
     if result > 0:
         user_id = mysql.cur.fetchall()
@@ -110,23 +110,19 @@ def forgot():
     artist = data['artistName']
 
     mysql = database.Database()
-    user_id = request.args.get('id')
-    token = request.headers['Authorization'].split(" ")[1]
     # user token validation
-    if maketoken.decode_token(app, user_id, token):
-        result = mysql.getUser(email_id)
-        # look for the account, if it exists or not
-        if result > 0:
-            user_details = mysql.cur.fetchall()
-            mysql.closeCursor()
-            q1 = user_details[0]['Q1']
-            q2 = user_details[0]['Q2']
+    result = mysql.getUser(email_id)
+    # look for the account, if it exists or not
+    if result > 0:
+        user_details = mysql.cur.fetchall()
+        mysql.closeCursor()
+        q1 = user_details[0]['Q1']
+        q2 = user_details[0]['Q2']
 
-            # check if the user has answered the 2 security questions correctly
-            if maiden == q1 and artist == q2:
-                return jsonify({'message': 'success'}), 200
-        return jsonify({'message': 'There was some error, Try again!!'}), 401
-    return jsonify({'message': 'Invalid Token'}), 401
+        # check if the user has answered the 2 security questions correctly
+        if maiden == q1 and artist == q2:
+            return jsonify({'message': 'success'}), 200
+    return jsonify({'message': 'There was some error, Try again!!'}), 401
 
 # this is for updating the password
 
@@ -139,26 +135,22 @@ def updatepass():
 
     # look for the account, if it exists or not
     mysql = database.Database()
-    user_id = request.args.get('id')
-    token = request.headers['Authorization'].split(" ")[1]
     # user token validation
-    if maketoken.decode_token(app, user_id, token):
-        result = mysql.getUser(email_id)
-        if result > 0:
-            user_details = mysql.cur.fetchall()
+    result = mysql.getUser(email_id)
+    if result > 0:
+        user_details = mysql.cur.fetchall()
 
-            bytes = new_pass.encode('utf-8')
-            salt = str(user_details[0]['Salt']).encode('utf-8')
-            hashed_password = bcrypt.hashpw(bytes, salt)
-            hashed_password = hashed_password.decode('utf-8')
+        bytes = new_pass.encode('utf-8')
+        salt = str(user_details[0]['Salt']).encode('utf-8')
+        hashed_password = bcrypt.hashpw(bytes, salt)
+        hashed_password = hashed_password.decode('utf-8')
 
-            # query for updating the password for this emailID
-            mysql.updatePass(email_id, hashed_password)
-            mysql.closeCursor()
+        # query for updating the password for this emailID
+        mysql.updatePass(email_id, hashed_password)
+        mysql.closeCursor()
 
-            return jsonify({'message': 'success'}), 200
-        return jsonify({'message': 'There was some error, Try again!!'}), 401
-    return jsonify({'message': 'Invalid Token'}), 401
+        return jsonify({'message': 'success'}), 200
+    return jsonify({'message': 'There was some error, Try again!!'}), 401
 
 # this is for fetching user details
 
@@ -193,7 +185,8 @@ def updateprofile():
 
     # look for the account, if it exists or not
     mysql = database.Database()
-    result = mysql.updateUser(user_id, contact, street, city, state, country, zip)
+    result = mysql.updateUser(user_id, contact, street,
+                              city, state, country, zip)
     if result > 0:
         user_details = mysql.cur.fetchall()
         mysql.closeCursor()
@@ -209,6 +202,7 @@ def updateprofile():
 def insertproduct():
     mysql = database.Database()
     pdata = request.get_json()
+
     pname = pdata['name']
     pdesc = pdata['description']
     pprice = pdata['price']
@@ -223,7 +217,8 @@ def insertproduct():
     szip = pdata['szip']
 
     address = sstreet + scity + sstate + scountry + szip
-    gmaps_key = googlemaps.Client(key="AIzaSyAp-O3TH6q8MwUykZeds32EyxW1twK7-t0")
+    gmaps_key = googlemaps.Client(
+        key="AIzaSyAp-O3TH6q8MwUykZeds32EyxW1twK7-t0")
     g = gmaps_key.geocode(address)
     slat = g[0]["geometry"]["location"]["lat"]
     slong = g[0]["geometry"]["location"]["lng"]
@@ -231,8 +226,10 @@ def insertproduct():
 
     user_id = request.args.get('id')
     token = request.headers['Authorization'].split(" ")[1]
+
+    token = token[1:-1]
     # user token validation
-    if maketoken.decode_token(app, user_id, token):
+    if maketoken.decode_token(app, int(user_id), token):
         # look for the account, if it already exists
         pid = mysql.insertProduct(user_id, pname, pdesc, pprice, pcategory,
                                   pimgurl, sname, scontact, sstreet, scity, sstate, scountry, szip, slat, slong)
@@ -545,7 +542,6 @@ def getcomplaints():
     return jsonify({'message': 'There was some error, Try again!!'}), 401
 
 
-
 @app.route("/dummy", methods=["POST"])
 def dummy():
     # temp = {"temp": "temp"}
@@ -569,6 +565,8 @@ def productstatus():
         return jsonify({'message': 'There was some error, Try again!!'}), 401
 
 # this is for getting seller id of a product
+
+
 @app.route("/getsellerid", methods=['POST'])
 def getsellerid():
     mysql = database.Database()
@@ -583,12 +581,16 @@ def getsellerid():
         return jsonify({'message': 'No Seller Found'}), 401
 
 # this is for google login
+
+
 @app.route('/googlelogin', methods=['POST'])
 def googlelogin():
     login_data = request.json
     try:
-        print(login_data['credential'], login_data['clientId'] == creds['CLIENT_ID'])
-        idinfo = id_token.verify_oauth2_token(login_data['credential'], Request(), creds['CLIENT_ID'])
+        print(login_data['credential'],
+              login_data['clientId'] == creds['CLIENT_ID'])
+        idinfo = id_token.verify_oauth2_token(
+            login_data['credential'], Request(), creds['CLIENT_ID'])
         if idinfo['iss'] not in ['accounts.google.com', 'https://accounts.google.com']:
             raise ValueError('Wrong issuer.')
         # ID token is valid. Get the user's Google Account ID from the decoded token.
@@ -611,7 +613,7 @@ def googlelogin():
             mysql.updateUserAsGoogleUser(email_id, google_id)
 
         if result == 0:
-            mysql.insertUser(fname, lname, email_id, salt, password, q1, q2, 
+            mysql.insertUser(fname, lname, email_id, salt, password, q1, q2,
                              picture, google_id, contact, street, city, state, country, zip)
         mysql.closeCursor()
 
@@ -625,7 +627,7 @@ def googlelogin():
             'last_name': user_details[0]['LName'],
             'profile_pic': user_details[0]['ProfilePic']
         }
-        
+
         return maketoken.encode_token(app, response, user_details[0]['UserID'])
         # print(user_id, fname, lname, email_id, picture)
     except ValueError:
