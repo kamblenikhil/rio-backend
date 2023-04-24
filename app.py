@@ -565,9 +565,28 @@ def getproductrecommendation():
     productid = data['pid']
     result = mysql.getProductRecommendation(category, productid)
     if result > 0:
-        pdetails = mysql.cur.fetchall()
+        product_details = mysql.cur.fetchall()
+        response = []
+        for prods in product_details:
+            res = {
+                'pid': prods['ProductID'],
+                'pname': prods['Name'],
+                'rating': prods['Rating'],
+                'img': prods['ImageURL'],
+                'price': prods['Price'],
+                'category': prods['Category'],
+                'desc': prods['Description'],
+                'SICity': prods['SICity'],
+                "SIContact": prods["SIContact"],
+                "SICountry": prods["SICountry"],
+                "SIName": prods["SIName"],
+                "SIState": prods["SIState"],
+                "SIStreet": prods["SIStreet"],
+                "SIZip": prods["SIZip"],
+            }
+            response.append(res)
         mysql.closeCursor()
-        return jsonify(pdetails), 200
+        return jsonify(response), 200
     else:
         return jsonify({'message': 'No Seller Found'}), 401
     
