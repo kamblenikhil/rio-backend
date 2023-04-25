@@ -16,9 +16,9 @@ app = Flask(__name__)
 CORS(app)
 
 # secret credentials
-creds = yaml.safe_load(open('credentials.yaml'))
-app.config['SECRET_KEY'] = creds['APP_SECRET']
-# app.config['SECRET_KEY'] = os.environ.get('APP_SECRET')
+# creds = yaml.safe_load(open('credentials.yaml'))
+# app.config['SECRET_KEY'] = creds['APP_SECRET']
+app.config['SECRET_KEY'] = os.environ.get('APP_SECRET')
 
 # this is the part of user registration (signup)
 
@@ -219,8 +219,8 @@ def insertproduct():
     szip = pdata['szip']
 
     address = sstreet + scity + sstate + scountry + szip
-    gmaps_key = googlemaps.Client(key=creds['GOOGLE_MAPS'])
-    # gmaps_key = googlemaps.Client( key = os.environ.get('GOOGLE_MAPS'))
+    # gmaps_key = googlemaps.Client(key=creds['GOOGLE_MAPS'])
+    gmaps_key = googlemaps.Client( key = os.environ.get('GOOGLE_MAPS'))
     g = gmaps_key.geocode(address)
     slat = g[0]["geometry"]["location"]["lat"]
     slong = g[0]["geometry"]["location"]["lng"]
@@ -485,15 +485,15 @@ def rentaproduct():
         print(emailId)
         mysql.closeCursor()
         # email confirmation receipt to the sender
-        url = creds['RAPID_API_URL']
-        # url = os.environ.get('RAPID_API_URL')
+        # url = creds['RAPID_API_URL']
+        url = os.environ.get('RAPID_API_URL')
 
         payload = {"personalizations": [{"to": [{"email": emailId}], "subject": "RIO - Payment Confirmation Receipt"}], "from": {"email": "no-reply@rio.com"},
                    "content": [{"type": "text/plain", "value": "Thank you for renting the Product from RIO. Your payment was received successfully."}]}
 
-        headers = {"content-type": "application/json",
-                   "X-RapidAPI-Key": creds['X-RapidAPI-Key'], "X-RapidAPI-Host": creds['X-RapidAPI-Host']}
-        # headers = {"content-type": "application/json","X-RapidAPI-Key": os.environ.get('X-RapidAPI-Key'),"X-RapidAPI-Host": os.environ.get('X-RapidAPI-Host')}
+        # headers = {"content-type": "application/json",
+                #    "X-RapidAPI-Key": creds['X-RapidAPI-Key'], "X-RapidAPI-Host": creds['X-RapidAPI-Host']}
+        headers = {"content-type": "application/json","X-RapidAPI-Key": os.environ.get('X-RapidAPI-Key'),"X-RapidAPI-Host": os.environ.get('X-RapidAPI-Host')}
 
         response = requests.post(url, json=payload, headers=headers)
         if response.status_code == 202:
@@ -680,8 +680,8 @@ def googlelogin():
     try:
         # print(login_data['credential'],login_data['clientId'] == creds['CLIENT_ID'])
         idinfo = id_token.verify_oauth2_token(
-            login_data['credential'], Request(), creds['CLIENT_ID'])
-        # login_data['credential'], Request(), os.environ.get('CLIENT_ID'))
+            # login_data['credential'], Request(), creds['CLIENT_ID'])
+            login_data['credential'], Request(), os.environ.get('CLIENT_ID'))
         if idinfo['iss'] not in ['accounts.google.com', 'https://accounts.google.com']:
             raise ValueError('Wrong issuer.')
         # ID token is valid. Get the user's Google Account ID from the decoded token.
