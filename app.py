@@ -21,6 +21,8 @@ app.config['SECRET_KEY'] = creds['APP_SECRET']
 # app.config['SECRET_KEY'] = os.environ.get('APP_SECRET')
 
 # this is the part of user registration (signup)
+
+
 @app.route("/signup", methods=['POST'])
 def signup():
     mysql = database.Database()
@@ -68,6 +70,8 @@ def signup():
         return jsonify({'message': 'There was some error, Try again!!'}), 401
 
 # this will be normal user login
+
+
 @app.route("/login", methods=['POST'])
 def login():
     payload = request.get_json()
@@ -100,6 +104,8 @@ def login():
     return jsonify({'message': 'account not found'}), 403
 
 # this is for the forgot password
+
+
 @app.route("/forgot", methods=['POST'])
 def forgot():
     data = request.get_json()
@@ -123,6 +129,8 @@ def forgot():
     return jsonify({'message': 'There was some error, Try again!!'}), 401
 
 # this is for updating the password
+
+
 @app.route("/updatepass", methods=['POST'])
 def updatepass():
     data = request.get_json()
@@ -149,6 +157,8 @@ def updatepass():
     return jsonify({'message': 'There was some error, Try again!!'}), 401
 
 # this is for fetching user details
+
+
 @app.route("/getuprofile", methods=['GET'])
 def userprofile():
     user_id = request.args.get('id')
@@ -164,6 +174,8 @@ def userprofile():
     return jsonify({'message': 'There was some error, Try again!!'}), 401
 
 # this is for updating the profile details
+
+
 @app.route("/updateprofile", methods=['POST'])
 def updateprofile():
     data = request.get_json()
@@ -177,7 +189,8 @@ def updateprofile():
 
     # look for the account, if it exists or not
     mysql = database.Database()
-    result = mysql.updateUser(user_id, contact, street, city, state, country, zip)
+    result = mysql.updateUser(user_id, contact, street,
+                              city, state, country, zip)
     if result > 0:
         user_details = mysql.cur.fetchall()
         mysql.closeCursor()
@@ -230,6 +243,8 @@ def insertproduct():
     return jsonify({'message': 'Invalid Token'}), 401
 
 # this is for fetching the product details for admin panel
+
+
 @app.route("/getallproducts", methods=['GET'])
 def getallproducts():
     mysql = database.Database()
@@ -242,6 +257,8 @@ def getallproducts():
         return jsonify({'message': 'There was some error, Try again!!'}), 401
 
 # this is for fetching all the approved product details for user view
+
+
 @app.route("/getapprovedproducts", methods=['GET'])
 def getapprovedproducts():
     mysql = database.Database()
@@ -250,11 +267,14 @@ def getapprovedproducts():
         product_details = mysql.cur.fetchall()
         response = []
         for prods in product_details:
+            img = prods['ImageURL']
+            img_list = img.split(",")
+            imgurl = img_list[0]
             res = {
                 'pid': prods['ProductID'],
                 'pname': prods['Name'],
                 'rating': prods['Rating'],
-                'img': prods['ImageURL'],
+                'img': imgurl,
                 'price': prods['Price'],
                 'category': prods['Category'],
                 'desc': prods['Description'],
@@ -265,7 +285,6 @@ def getapprovedproducts():
                 "SIState": prods["SIState"],
                 "SIStreet": prods["SIStreet"],
                 "SIZip": prods["SIZip"],
-
             }
             response.append(res)
 
@@ -275,6 +294,8 @@ def getapprovedproducts():
         return jsonify({'message': 'There are no approved products'}), 401
 
 # this is for fetching all the rejected product details
+
+
 @app.route("/getrejectedproducts", methods=['GET'])
 def getrejectedproducts():
     mysql = database.Database()
@@ -283,11 +304,14 @@ def getrejectedproducts():
         product_details = mysql.cur.fetchall()
         response = []
         for prods in product_details:
+            img = prods['ImageURL']
+            img_list = img.split(",")
+            imgurl = img_list[0]
             res = {
                 'pid': prods['ProductID'],
                 'pname': prods['Name'],
                 'rating': prods['Rating'],
-                'img': prods['ImageURL'],
+                'img': imgurl,
                 'price': prods['Price'],
                 'category': prods['Category'],
                 'desc': prods['Description'],
@@ -307,6 +331,8 @@ def getrejectedproducts():
         return jsonify({'message': 'There are no rejected products'}), 401
 
 # this is for fetching a single product details for user view
+
+
 @app.route("/getproduct", methods=['GET'])
 def getproduct():
     product_id = request.args.get('productid')
@@ -316,11 +342,13 @@ def getproduct():
         product_details = mysql.cur.fetchall()
         response = []
         for prods in product_details:
+            img = prods['ImageURL']
+            img_list = img.split(",")
             res = {
                 'pid': prods['ProductID'],
                 'pname': prods['Name'],
                 'rating': prods['Rating'],
-                'img': prods['ImageURL'],
+                'img': img_list,
                 'price': prods['Price'],
                 'category': prods['Category'],
                 'desc': prods['Description'],
@@ -341,6 +369,8 @@ def getproduct():
         return jsonify({'message': 'This product does not exist'}), 401
 
 # this is for fetching all products posted by the user [method = 1]
+
+
 @app.route("/upposted", methods=['POST'])
 def upposted():
     data = request.get_json()
@@ -358,12 +388,16 @@ def upposted():
             if res > 0:
                 product_details = mysql.cur.fetchall()
                 response = []
+
                 for prods in product_details:
+                    img = prods['ImageURL']
+                    img_list = img.split(",")
+                    imgurl = img_list[0]
                     res = {
                         'pid': prods['ProductID'],
                         'pname': prods['Name'],
                         'rating': prods['Rating'],
-                        'img': prods['ImageURL'],
+                        'img': imgurl,
                         'price': prods['Price'],
                         'category': prods['Category'],
                         'desc': prods['Description'],
@@ -383,6 +417,8 @@ def upposted():
     return jsonify({'message': 'Hello Invalid Token'}), 401
 
 # this is for fetching all products purchased by the user [method = 2]
+
+
 @app.route("/uppurchased", methods=['POST'])
 def uppurchased():
     data = request.get_json()
@@ -391,8 +427,9 @@ def uppurchased():
     mysql = database.Database()
     user_id = request.args.get('id')
     token = request.headers['Authorization'].split(" ")[1]
+    token = token[1:-1]
     # user token validation
-    if maketoken.decode_token(app, user_id, token):
+    if maketoken.decode_token(app, int(user_id), token):
         result = mysql.getUser(email_id)
         # look for the account, if it exists or not
         if result > 0:
@@ -400,12 +437,16 @@ def uppurchased():
             if res > 0:
                 product_details = mysql.cur.fetchall()
                 response = []
+
                 for prods in product_details:
+                    img = prods['ImageURL']
+                    img_list = img.split(",")
+                    imgurl = img_list[0]
                     res = {
                         'pid': prods['ProductID'],
                         'pname': prods['Name'],
                         'rating': prods['Rating'],
-                        'img': prods['ImageURL'],
+                        'img': imgurl,
                         'price': prods['Price'],
                         'category': prods['Category'],
                         'desc': prods['Description'],
@@ -425,14 +466,21 @@ def uppurchased():
     return jsonify({'message': 'Invalid Token'}), 401
 
 # rent a product
+
+
 @app.route("/rentaproduct", methods=['POST'])
 def rentaproduct():
     mysql = database.Database()
+    data = request.get_json()
     user_id = request.args.get('id')
-    product_id = request.args.get('product_id')
-    result = mysql.rentaproduct(user_id, product_id)
-    if result > 0:
-        res = mysql.cur.fetchall()
+    product_id = data['productId']
+    token = request.headers['Authorization'].split(" ")[1]
+    token = token[1:-1]
+    # user token validation
+    if maketoken.decode_token(app, int(user_id), token):
+        result = mysql.rentaproduct(user_id, product_id)
+        if result > 0:
+            res = mysql.cur.fetchall()
         emailId = res[0]['EmailID']
         print(emailId)
         mysql.closeCursor()
@@ -440,19 +488,22 @@ def rentaproduct():
         url = creds['RAPID_API_URL']
         # url = os.environ.get('RAPID_API_URL')
 
-        payload = {"personalizations": [{"to": [{ "email": emailId }],"subject": "RIO - Payment Confirmation Receipt"}], "from": { "email": "no-reply@rio.com" }, "content": [{"type": "text/plain","value": "Thank you for renting the Product from RIO. Your payment was received successfully."}]}
+        payload = {"personalizations": [{"to": [{"email": emailId}], "subject": "RIO - Payment Confirmation Receipt"}], "from": {"email": "no-reply@rio.com"},
+                   "content": [{"type": "text/plain", "value": "Thank you for renting the Product from RIO. Your payment was received successfully."}]}
 
-        headers = {"content-type": "application/json","X-RapidAPI-Key": creds['X-RapidAPI-Key'],"X-RapidAPI-Host": creds['X-RapidAPI-Host']}
+        headers = {"content-type": "application/json",
+                   "X-RapidAPI-Key": creds['X-RapidAPI-Key'], "X-RapidAPI-Host": creds['X-RapidAPI-Host']}
         # headers = {"content-type": "application/json","X-RapidAPI-Key": os.environ.get('X-RapidAPI-Key'),"X-RapidAPI-Host": os.environ.get('X-RapidAPI-Host')}
 
-        response = requests.post(url, json = payload, headers = headers)
+        response = requests.post(url, json=payload, headers=headers)
         if response.status_code == 202:
             return jsonify({'message': 'Product Rented Successfully, Payment Email Sent'}), 200
         return jsonify({{'message': 'Product Rented Successfully, Payment Email Not Sent.'}}), 401
-    else:
-        return jsonify({'message': 'There was some error, Try again!!'}), 401
+    return jsonify({'message': 'Invalid Token'}), 401
 
 # this is for fetching product reviews
+
+
 @app.route("/getprodreviews", methods=['GET'])
 def getprodreviews():
     mysql = database.Database()
@@ -466,6 +517,8 @@ def getprodreviews():
         return jsonify({'message': 'There are no reviews for this product'}), 200
 
 # this is for fetching if the user has rented the given product or not
+
+
 @app.route("/getrentedproductstatus", methods=['GET'])
 def getrentedproductstatus():
     mysql = database.Database()
@@ -480,6 +533,8 @@ def getrentedproductstatus():
         return jsonify({'message': 'There are no reviews for this product'}), 200
 
 # this is for inserting product review
+
+
 @app.route("/insertprodreviews", methods=['POST'])
 def insertprodreviews():
     mysql = database.Database()
@@ -495,6 +550,8 @@ def insertprodreviews():
     return jsonify({'message': 'There was some error, Try again!!'}), 401
 
 # this is for filing a complaint
+
+
 @app.route("/fileacomplaint", methods=['POST'])
 def fileacomplaint():
     mysql = database.Database()
@@ -511,6 +568,8 @@ def fileacomplaint():
     return jsonify({'message': 'There was some error, Try again!!'}), 401
 
 # this is for getting complaint's
+
+
 @app.route("/getcomplaints", methods=['GET'])
 def getcomplaints():
     mysql = database.Database()
@@ -522,6 +581,8 @@ def getcomplaints():
     return jsonify({'message': 'There was some error, Try again!!'}), 401
 
 # this is for testing purpose only
+
+
 @app.route("/dummy", methods=["POST"])
 def dummy():
     # temp = {"temp": "temp"}
@@ -529,6 +590,8 @@ def dummy():
     return "Hello! This website works..."
 
 # this is for updating the product status (admin approval)
+
+
 @app.route("/productstatus", methods=['PATCH'])
 def productstatus():
     mysql = database.Database()
@@ -543,6 +606,8 @@ def productstatus():
         return jsonify({'message': 'There was some error, Try again!!'}), 401
 
 # this is for getting seller id of a product
+
+
 @app.route("/getsellerid", methods=['POST'])
 def getsellerid():
     mysql = database.Database()
@@ -557,6 +622,8 @@ def getsellerid():
         return jsonify({'message': 'No Seller Found'}), 401
 
 # this is for product recommendation
+
+
 @app.route("/getproductrecommendation", methods=['POST'])
 def getproductrecommendation():
     mysql = database.Database()
@@ -589,8 +656,10 @@ def getproductrecommendation():
         return jsonify(response), 200
     else:
         return jsonify({'message': 'No Seller Found'}), 401
-    
+
 # this is for google login
+
+
 @app.route('/googlelogin', methods=['POST'])
 def googlelogin():
     login_data = request.json
@@ -598,7 +667,7 @@ def googlelogin():
         # print(login_data['credential'],login_data['clientId'] == creds['CLIENT_ID'])
         idinfo = id_token.verify_oauth2_token(
             login_data['credential'], Request(), creds['CLIENT_ID'])
-            # login_data['credential'], Request(), os.environ.get('CLIENT_ID'))
+        # login_data['credential'], Request(), os.environ.get('CLIENT_ID'))
         if idinfo['iss'] not in ['accounts.google.com', 'https://accounts.google.com']:
             raise ValueError('Wrong issuer.')
         # ID token is valid. Get the user's Google Account ID from the decoded token.
@@ -633,7 +702,8 @@ def googlelogin():
             'user_id': user_details[0]['UserID'],
             'first_name': user_details[0]['FName'],
             'last_name': user_details[0]['LName'],
-            'profile_pic': user_details[0]['ProfilePic']
+            'profile_pic': user_details[0]['ProfilePic'],
+            'email_id': user_details[0]['EmailID']
         }
 
         return maketoken.encode_token(app, response, user_details[0]['UserID'])
