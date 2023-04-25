@@ -707,11 +707,14 @@ def getproductrecommendation():
         product_details = mysql.cur.fetchall()
         response = []
         for prods in product_details:
+            img = prods['ImageURL']
+            img_list = img.split(",")
+            imgurl = img_list[0]
             res = {
                 'pid': prods['ProductID'],
                 'pname': prods['Name'],
                 'rating': prods['Rating'],
-                'img': prods['ImageURL'],
+                'img': imgurl,
                 'price': prods['Price'],
                 'category': prods['Category'],
                 'desc': prods['Description'],
