@@ -105,7 +105,17 @@ class Database:
         result = self.cur.execute(
             "SELECT EXISTS(SELECT * FROM user_product WHERE UserID = %s and ProductID = %s and Method = 2) AS Result", (user_id, product_id))
         return result
-
+    
+    # fetching renter details of the product
+    def getRenterDetails(self, product_id):
+        self.cur.execute("SELECT UserID FROM user_product WHERE ProductID = %s and Method = 2", (product_id))
+        self.con.commit()
+        res_det = self.cur.fetchall()
+        user_id = res_det[0]['UserID']
+        result = self.cur.execute("SELECT UserID, FName, LName from user where UserID = %s", (user_id))
+        self.con.commit()
+        return result
+    
     # inserting product reviews
     def insertProductReviews(self, user_id, rating, comment, product_id):
         result = self.cur.execute(
@@ -151,8 +161,7 @@ class Database:
 
     # get seller id of particular product
     def getSellerIdOfProduct(self, productid):
-        result = self.cur.execute(
-            "SELECT UserID from user_product WHERE ProductID = %s", (productid))
+        result = self.cur.execute("SELECT UserID from user_product WHERE ProductID = %s and Method=1", (productid))
         self.con.commit()
         return result
 
