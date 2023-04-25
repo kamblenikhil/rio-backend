@@ -570,7 +570,7 @@ def rentaproduct():
         response = requests.post(url, json=payload, headers=headers)
         if response.status_code == 202:
             return jsonify({'message': 'Product Rented Successfully, Payment Email Sent'}), 200
-        return jsonify({{'message': 'Product Rented Successfully, Payment Email Not Sent.'}}), 401
+        return jsonify({'message': 'Product Rented Successfully, Payment Email Not Sent.'}), 200
     return jsonify({'message': 'Invalid Token'}), 401
 
 # this is for fetching product reviews
