@@ -140,8 +140,7 @@ class Database:
 
     # fetching product details [user view - approved products]
     def getApprovedProduct(self):
-        result = self.cur.execute(
-            "SELECT * FROM Product WHERE Status = %s OR Status = %s", (2, 4))
+        result = self.cur.execute("SELECT * FROM Product WHERE Status = %s", (2))
         return result
 
     # fetching product details [admin view - rejected products]

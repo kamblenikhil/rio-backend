@@ -59,7 +59,7 @@ def signup():
         user_id = mysql.cur.fetchall()
         mysql.closeCursor()
         response = {
-            "user_id": user_id,
+            "user_id": user_id[0]['UserID'],
             "first_name": fname,
             "last_name": lname,
             "email_id": email_id,
