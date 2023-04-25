@@ -412,7 +412,7 @@ def upposted():
                     response.append(res)
                 mysql.closeCursor()
                 return jsonify(response), 200
-            return jsonify({'message': 'There are no posted products by user'}), 200
+            return jsonify({'message': 'There are no posted products by user'}), 401
         return jsonify({'message': 'There was some error, Try again!!'}), 401
     return jsonify({'message': 'Hello Invalid Token'}), 401
 
@@ -461,7 +461,7 @@ def uppurchased():
                     response.append(res)
                 mysql.closeCursor()
                 return jsonify(response), 200
-            return jsonify({'message': 'There are no purchased products by user'}), 200
+            return jsonify({'message': 'There are no purchased products by user'}), 401
         return jsonify({'message': 'There was some error, Try again!!'}), 401
     return jsonify({'message': 'Invalid Token'}), 401
 
