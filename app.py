@@ -614,10 +614,10 @@ def getsellerid():
     data = request.get_json()
     product_id = data['productid']
     result = mysql.getSellerIdOfProduct(product_id)
-    if result > 0:
-        pdetails = mysql.cur.fetchall()
+    if len(result) > 0:
+        # pdetails = mysql.cur.fetchall()
         mysql.closeCursor()
-        return jsonify(pdetails), 200
+        return jsonify(result), 200
     else:
         return jsonify({'message': 'No Seller Found'}), 401
 

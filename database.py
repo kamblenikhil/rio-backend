@@ -165,7 +165,12 @@ class Database:
     def getSellerIdOfProduct(self, productid):
         result = self.cur.execute(
             "SELECT UserID from user_product WHERE ProductID = %s and Method=1", (productid))
-        self.con.commit()
+        seller_details = self.cur.fetchall()
+        result = self.cur.execute(
+            "SELECT FName, LName from user where UserID = %s", (seller_details[0]['UserID']))
+        seller_details1 = self.cur.fetchall()
+        result = {"UserID": seller_details[0]['UserID'], "FName": seller_details1[0]
+                  ['FName'], "LName": seller_details1[0]['LName']},
         return result
 
     # get product recommendations
