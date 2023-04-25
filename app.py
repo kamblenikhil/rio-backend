@@ -360,7 +360,8 @@ def getproduct():
                 "SIStreet": prods["SIStreet"],
                 "SIZip": prods["SIZip"],
                 "SILat": prods["SILat"],
-                "SILon": prods["SILon"]
+                "SILon": prods["SILon"],
+                "pStatus": prods["Status"]
             }
             response.append(res)
         mysql.closeCursor()
