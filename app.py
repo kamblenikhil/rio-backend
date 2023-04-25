@@ -656,8 +656,10 @@ def getproductrecommendation():
         return jsonify(response), 200
     else:
         return jsonify({'message': 'No Seller Found'}), 401
-    
+
 # this is for getting renter details of a product
+
+
 @app.route("/getrenterdetails", methods=['POST'])
 def getrenterdetails():
     mysql = database.Database()
