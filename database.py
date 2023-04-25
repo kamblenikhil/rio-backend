@@ -152,6 +152,18 @@ class Database:
             "SELECT * FROM Product WHERE Status = %s ", (3))
         return result
 
+    # fetching product details [admin view - pending products]
+    def getPendingProduct(self):
+        result = self.cur.execute(
+            "SELECT * FROM Product WHERE Status = %s ", (1))
+        return result
+
+    # fetching product details [admin view - rented products]
+    def getRentedProduct(self):
+        result = self.cur.execute(
+            "SELECT * FROM Product WHERE Status = %s ", (4))
+        return result
+    
     #   STATUS  =>  Pending = 1   |   Approved = 2    |   Rejected = 3
 
     # updating the product details

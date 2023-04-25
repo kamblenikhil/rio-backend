@@ -369,6 +369,77 @@ def getproduct():
     else:
         return jsonify({'message': 'This product does not exist'}), 401
 
+# this is for fetching all the pending products
+@app.route("/getpendingproducts", methods=['GET'])
+def getpendingproducts():
+    mysql = database.Database()
+    result = mysql.getPendingProduct()
+    if result > 0:
+        product_details = mysql.cur.fetchall()
+        response = []
+        for prods in product_details:
+            img = prods['ImageURL']
+            img_list = img.split(",")
+            imgurl = img_list[0]
+            res = {
+                'pid': prods['ProductID'],
+                'pname': prods['Name'],
+                'rating': prods['Rating'],
+                'img': imgurl,
+                'price': prods['Price'],
+                'category': prods['Category'],
+                'desc': prods['Description'],
+                'SICity': prods['SICity'],
+                "SIContact": prods["SIContact"],
+                "SICountry": prods["SICountry"],
+                "SIName": prods["SIName"],
+                "SIState": prods["SIState"],
+                "SIStreet": prods["SIStreet"],
+                "SIZip": prods["SIZip"],
+
+            }
+            response.append(res)
+        mysql.closeCursor()
+        return jsonify(response), 200
+    else:
+        return jsonify({'message': 'There are no pending products'}), 401
+
+
+# this is for fetching all the rented products
+@app.route("/getrentedproducts", methods=['GET'])
+def getrentedproducts():
+    mysql = database.Database()
+    result = mysql.getRentedProduct()
+    if result > 0:
+        product_details = mysql.cur.fetchall()
+        response = []
+        for prods in product_details:
+            img = prods['ImageURL']
+            img_list = img.split(",")
+            imgurl = img_list[0]
+            res = {
+                'pid': prods['ProductID'],
+                'pname': prods['Name'],
+                'rating': prods['Rating'],
+                'img': imgurl,
+                'price': prods['Price'],
+                'category': prods['Category'],
+                'desc': prods['Description'],
+                'SICity': prods['SICity'],
+                "SIContact": prods["SIContact"],
+                "SICountry": prods["SICountry"],
+                "SIName": prods["SIName"],
+                "SIState": prods["SIState"],
+                "SIStreet": prods["SIStreet"],
+                "SIZip": prods["SIZip"],
+
+            }
+            response.append(res)
+        mysql.closeCursor()
+        return jsonify(response), 200
+    else:
+        return jsonify({'message': 'There are no rented products'}), 401
+    
 # this is for fetching all products posted by the user [method = 1]
 
 
@@ -593,7 +664,7 @@ def dummy():
 # this is for updating the product status (admin approval)
 
 
-@app.route("/productstatus", methods=['PATCH'])
+@app.route("/productstatus", methods=['PUT'])
 def productstatus():
     mysql = database.Database()
     pdata = request.get_json()
